@@ -52,10 +52,15 @@ class TetrisGame(object):
         return combined_board
 
     def is_collision(self, check_pos):
-        # returns true if move is illegal
+        # returns true if move is illegal or out of range
         for cur_tetris_index_x, row_x in enumerate(self.current_tetris):
             for cur_tetris_index_y, item in enumerate(row_x):
-                if (item != 0) and (self.placed_board[check_pos[0] + cur_tetris_index_x, check_pos[1] + cur_tetris_index_y] != 0):
+                try:
+                    if (item != 0) and (self.placed_board[check_pos[0] + cur_tetris_index_x, check_pos[1] + cur_tetris_index_y] != 0):
+                        return True
+                except IndexError:
+                    # Index error returns out of range
+                    print("DEBUG: IndexError in is_collision - position out of game boundary.")
                     return True
         return False
 
