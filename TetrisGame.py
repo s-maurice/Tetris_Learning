@@ -45,6 +45,7 @@ class TetrisGame(object):
         self.pos = [int(self.board_size[0] / 2), 0]
         self.current_tetris = self.get_random_tetris()
         self.upcoming_tetris_list = [self.get_random_tetris() for _ in range(5)]
+        self.upcoming_tetris_list = [self.tetris_shapes[5] for _ in range(5)]  # Debug
 
     def get_combined_board(self):
         # Blindly combines board, placing current_tetris on top
@@ -136,11 +137,20 @@ class TetrisGame(object):
                 check_pos_offset_list.append(-3)
             for pos_offset in check_pos_offset_list:
                 if not self.is_collision(np.rot90(self.current_tetris.copy(), rotation_direction), (self.pos[0] + pos_offset, self.pos[1])):
-                    self.pos[0] += pos_offset
                     self.current_tetris = np.rot90(self.current_tetris, rotation_direction)
+                    self.pos[0] += pos_offset
+                    break
+
+    def clear_rows(self):
+        # remove completed rows from placed_board
+        for row_index, row in enumerate(np.transpose(self.placed_board)):
+            if 0 not in row:
+                self.placed_board = np.delete(self.placed_board, row_index, axis=1)
+                self.placed_board = np.insert(self.placed_board, 0, np.zeros(self.board_size[0]), axis=1)
 
     def game_tick(self):
         if self.game_live:
             self.game_tick_index += 1
+            self.clear_rows()
             if self.game_tick_index % self.ticks_per_movedown == 0:
                 self.move_down()
