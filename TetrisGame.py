@@ -54,9 +54,9 @@ class TetrisGame(object):
                     combined_board[self.pos[0] + cur_tetris_index_x, self.pos[1] + cur_tetris_index_y] = item
         return combined_board
 
-    def is_collision(self, check_pos):
+    def is_collision(self, check_tetris, check_pos):
         # returns true if move is illegal or out of range
-        for cur_tetris_index_x, row_x in enumerate(self.current_tetris):
+        for cur_tetris_index_x, row_x in enumerate(check_tetris):
             for cur_tetris_index_y, item in enumerate(row_x):
                 try:
                     if (item != 0) and (self.placed_board[check_pos[0] + cur_tetris_index_x, check_pos[1] + cur_tetris_index_y] != 0):
@@ -79,20 +79,32 @@ class TetrisGame(object):
     def move_down(self):
         # moves position one block down, checking if block is placed
         # block is placed if there is a collision is pos_y + 1
-        if self.is_collision((self.pos[0], self.pos[1] + 1)):
+        if self.is_collision(self.current_tetris, (self.pos[0], self.pos[1] + 1)):
             # Place current block onto the placed_board
             self.placed_board = self.get_combined_board()
             # Get a new block and reset to top of screen
-            # be aware of bug caused by overhangs that may mean new block is placed into existing blocks
+            # be aware of bug caused by overhangs that may mean
+            # new block is placed into existing blocks or invalid position
             self.current_tetris = self.get_next_block()
-            # may want to check this position with is_collision, and check for a valid position
-            # game over if no valid position at pos[1] = 0
-            self.pos[1] = 0
+
+            # check for valid positions at top of screen
+            for try_offset in range(self.board_size[0]):
+                if not self.is_collision(self.current_tetris, (self.pos[0] + try_offset, 0)):
+                    self.pos[0] += try_offset
+                    self.pos[1] = 0
+                    break
+                elif not self.is_collision(self.current_tetris, (self.pos[0] - try_offset, 0)):
+                    self.pos[0] -= try_offset
+                    self.pos[1] = 0
+                    break
+                else:
+                    # game over if no valid position at pos[1] = 0
+                    print("Game Over")
         self.pos[1] += 1
 
     def move_horizontal(self, movement_x):
         # Do movement only if valid
-        if not self.is_collision((self.pos[0] + movement_x, self.pos[1])):
+        if not self.is_collision(self.current_tetris, (self.pos[0] + movement_x, self.pos[1])):
             self.pos[0] += movement_x
 
     def move_drop(self):
@@ -100,13 +112,23 @@ class TetrisGame(object):
         # use for loop to check is_collision until collision or simply call move_down mu
         for drop_y in range(self.pos[1], self.board_size[1]):
             # Possibly board_size -1 / may call move_down too much
-            if not self.is_collision((self.pos[0], drop_y)):
+            if not self.is_collision(self.current_tetris, (self.pos[0], drop_y)):
                 self.move_down()
 
     def move_rotate(self, rotation_direction):
         # rotate current_tetris
         # rotation_direction: 1 or -1, amount of times to rotate the matrix by 90deg
-        self.current_tetris = np.rot90(self.current_tetris.copy(), rotation_direction)
+        # check for collision on a copy before rotating
+        if not self.is_collision(np.rot90(self.current_tetris.copy(), rotation_direction), self.pos):
+            self.current_tetris = np.rot90(self.current_tetris, rotation_direction)
+        else:
+            # if rotating would be illegal, check position 1 and 2 blocks to the left and right
+            # check check order depending on rotation_direction / doesn't really matter, just check 1 before 2
+            check_pos_offset_list = [1, -1]
+            for pos_offset in check_pos_offset_list:
+                if not self.is_collision(np.rot90(self.current_tetris.copy(), rotation_direction), (self.pos[0] + pos_offset, self.pos[1])):
+                    self.pos[0] += pos_offset
+                    self.current_tetris = np.rot90(self.current_tetris, rotation_direction)
 
     def game_tick(self):
         self.game_tick_index += 1
