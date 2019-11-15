@@ -83,6 +83,8 @@ class TetrisGame(object):
             # Get a new block and reset to top of screen
             # be aware of bug caused by overhangs that may mean new block is placed into existing blocks
             self.current_tetris = self.get_next_block()
+            # may want to check this position with is_collision, and check for a valid position
+            # game over if no valid position at pos[1] = 0
             self.pos[1] = 0
 
     def move_horizontal(self, movement_x):
@@ -96,3 +98,8 @@ class TetrisGame(object):
         for drop_y in range(self.pos[1], self.board_size[1]):  # Possibly board_size -1 / may call move_down too much
             if self.is_collision((self.pos[0], drop_y)):
                 self.move_down()
+
+    def move_rotate(self, rotation_direction):
+        # rotate current_tetris
+        # rotation_direction: 1 or -1, amount of times to rotate the matrix by 90deg
+        self.current_tetris = np.rot90(self.current_tetris.copy(), rotation_direction)
