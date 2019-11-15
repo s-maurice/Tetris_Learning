@@ -37,18 +37,21 @@ class TetrisGame(object):
         # Board State
         self.board_size = (10, 24)
         self.placed_board = np.zeros(self.board_size, dtype=int)
-        self.current_tetris = self.get_random_tetris()
-        self.upcoming_tetris_list = [self.get_random_tetris() for _ in range(5)]
+        self.game_tick_index = 0
+        self.ticks_per_movedown = 20
 
         # Player Position
-        self.pos = [self.board_size[0] / 2, 0]
+        self.pos = [int(self.board_size[0] / 2), 0]
+        self.current_tetris = self.get_random_tetris()
+        self.upcoming_tetris_list = [self.get_random_tetris() for _ in range(5)]
 
     def get_combined_board(self):
         # Blindly combines board, placing current_tetris on top
         combined_board = self.placed_board.copy()  # Start with combined_board
         for cur_tetris_index_x, row_x in enumerate(self.current_tetris):
             for cur_tetris_index_y, item in enumerate(row_x):
-                combined_board[self.pos[0] + cur_tetris_index_x, self.pos[1] + cur_tetris_index_y] = item
+                if not item == 0:
+                    combined_board[self.pos[0] + cur_tetris_index_x, self.pos[1] + cur_tetris_index_y] = item
         return combined_board
 
     def is_collision(self, check_pos):
@@ -69,7 +72,7 @@ class TetrisGame(object):
 
     def get_next_block(self):
         # Replenish upcoming_tetris_list with new tetris
-        self.upcoming_tetris_list[-1] = self.get_random_tetris()
+        self.upcoming_tetris_list.append(self.get_random_tetris())
         # Return and remove first item from upcoming_tetris_list
         return self.upcoming_tetris_list.pop(0)
 
@@ -103,3 +106,8 @@ class TetrisGame(object):
         # rotate current_tetris
         # rotation_direction: 1 or -1, amount of times to rotate the matrix by 90deg
         self.current_tetris = np.rot90(self.current_tetris.copy(), rotation_direction)
+
+    def game_tick(self):
+        self.game_tick_index += 1
+        if self.game_tick_index % self.ticks_per_movedown == 0:
+            self.move_down()

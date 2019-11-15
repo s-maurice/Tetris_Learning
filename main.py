@@ -2,6 +2,16 @@ import TetrisGame
 import pygame
 import numpy as np
 
+# Tetris piece colours
+tetris_colours = [(0, 0, 0),
+                  (255, 0, 0),
+                  (0, 150, 0),
+                  (0, 0, 255),
+                  (255, 120, 0),
+                  (255, 255, 0),
+                  (180, 0, 255),
+                  (0, 220, 220)]
+
 # Pixel Sizes
 tetris_pixel_size = 10
 
@@ -15,8 +25,11 @@ pygame.display.set_caption("Tetris")
 clock = pygame.time.Clock()
 
 # Create game_board surface for the tetris grid
-game_board_size = [i * tetris_pixel_size for i in test_board.shape]
+game_board_size = [i * tetris_pixel_size for i in (10, 24)]
 game_surface = pygame.Surface(game_board_size)
+
+# Create tetris game object
+tetrisGame = TetrisGame.TetrisGame()
 
 run = True
 while run:
@@ -25,7 +38,8 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
-    # --- Game logic should go here
+    # Update game object stats
+    tetrisGame.game_tick()
 
     # --- Screen-clearing code goes here
 
@@ -34,7 +48,7 @@ while run:
 
     # --- Drawing code should go here
     # Draw the combined board
-    for index_x, row_x in enumerate(combined_board):
+    for index_x, row_x in enumerate(tetrisGame.get_combined_board()):
         for index_y, item in enumerate(row_x):
             tetris_pixel = pygame.Rect((index_x * tetris_pixel_size, index_y * tetris_pixel_size), (tetris_pixel_size, tetris_pixel_size))
             pygame.draw.rect(game_surface, tetris_colours[item], tetris_pixel)
@@ -44,4 +58,4 @@ while run:
     pygame.display.flip()
 
     # Frame Rate Limit
-    clock.move_down(60)
+    clock.tick(60)
