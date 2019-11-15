@@ -78,7 +78,6 @@ class TetrisGame(object):
 
     def move_down(self):
         # moves position one block down, checking if block is placed
-        self.pos[1] += 1
         # block is placed if there is a collision is pos_y + 1
         if self.is_collision((self.pos[0], self.pos[1] + 1)):
             # Place current block onto the placed_board
@@ -89,6 +88,7 @@ class TetrisGame(object):
             # may want to check this position with is_collision, and check for a valid position
             # game over if no valid position at pos[1] = 0
             self.pos[1] = 0
+        self.pos[1] += 1
 
     def move_horizontal(self, movement_x):
         # Do movement only if valid
@@ -98,8 +98,9 @@ class TetrisGame(object):
     def move_drop(self):
         # Drop current_tetris to lowest position checking for collision for all blocks below
         # use for loop to check is_collision until collision or simply call move_down mu
-        for drop_y in range(self.pos[1], self.board_size[1]):  # Possibly board_size -1 / may call move_down too much
-            if self.is_collision((self.pos[0], drop_y)):
+        for drop_y in range(self.pos[1], self.board_size[1]):
+            # Possibly board_size -1 / may call move_down too much
+            if not self.is_collision((self.pos[0], drop_y)):
                 self.move_down()
 
     def move_rotate(self, rotation_direction):

@@ -33,10 +33,20 @@ tetrisGame = TetrisGame.TetrisGame()
 
 run = True
 while run:
-    # --- Main event loop
+    # get and process events, including keypress
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        if event.type == pygame.KEYDOWN:
+            # this method of getting keypresses does not repeat
+            if event.key == pygame.K_DOWN:
+                tetrisGame.move_drop()
+            if event.key == pygame.K_UP:
+                tetrisGame.move_rotate(1)
+            if event.key == pygame.K_RIGHT:
+                tetrisGame.move_horizontal(1)
+            if event.key == pygame.K_LEFT:
+                tetrisGame.move_horizontal(-1)
 
     # Update game object stats
     tetrisGame.game_tick()
