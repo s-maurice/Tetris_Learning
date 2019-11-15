@@ -39,6 +39,7 @@ class TetrisGame(object):
         self.placed_board = np.zeros(self.board_size, dtype=int)
         self.game_tick_index = 0
         self.ticks_per_movedown = 20
+        self.game_live = True
 
         # Player Position
         self.pos = [int(self.board_size[0] / 2), 0]
@@ -90,20 +91,21 @@ class TetrisGame(object):
             # new block is placed into existing blocks or invalid position
             self.current_tetris = self.get_next_block()
 
-            # check for valid positions at top of screen
+            # check for valid positions at top of screen, return blank to skip over game over
             for try_offset in range(self.board_size[0]):
                 if not self.is_collision(self.current_tetris, (self.pos[0] + try_offset, 0)):
                     self.pos[0] += try_offset
                     self.pos[1] = 0
-                    break
+                    return
                 elif not self.is_collision(self.current_tetris, (self.pos[0] - try_offset, 0)):
                     self.pos[0] -= try_offset
                     self.pos[1] = 0
-                    break
-                else:
-                    # game over if no valid position at pos[1] = 0
-                    print("Game Over")
-        self.pos[1] += 1
+                    return
+            # game over if no valid position at pos[1] = 0
+            print("Game Over")
+            self.game_live = False
+        else:
+            self.pos[1] += 1
 
     def move_horizontal(self, movement_x):
         # Do movement only if valid
@@ -138,6 +140,7 @@ class TetrisGame(object):
                     self.current_tetris = np.rot90(self.current_tetris, rotation_direction)
 
     def game_tick(self):
-        self.game_tick_index += 1
-        if self.game_tick_index % self.ticks_per_movedown == 0:
-            self.move_down()
+        if self.game_live:
+            self.game_tick_index += 1
+            if self.game_tick_index % self.ticks_per_movedown == 0:
+                self.move_down()
