@@ -47,6 +47,8 @@ while run:
                 tetrisGame.move_horizontal(1)
             if event.key == pygame.K_LEFT:
                 tetrisGame.move_horizontal(-1)
+            if event.key == pygame.K_z:
+                tetrisGame.move_rotate(-1)
 
     # Update game object stats
     tetrisGame.game_tick()

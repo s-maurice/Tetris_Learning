@@ -56,14 +56,17 @@ class TetrisGame(object):
 
     def is_collision(self, check_tetris, check_pos):
         # returns true if move is illegal or out of range
+        # first catch if the check_pos overflows the board sides
+        if check_pos[0] < 0 or check_pos[0] > self.board_size[0]-1:
+            return True
+        # check for collision between check_tetris and placed_board
         for cur_tetris_index_x, row_x in enumerate(check_tetris):
             for cur_tetris_index_y, item in enumerate(row_x):
                 try:
                     if (item != 0) and (self.placed_board[check_pos[0] + cur_tetris_index_x, check_pos[1] + cur_tetris_index_y] != 0):
                         return True
                 except IndexError:
-                    # Index error returns out of range
-                    print("DEBUG: IndexError in is_collision - position out of game boundary.")
+                    # catches indexerror for "I" blocks on the right side of board
                     return True
         return False
 
@@ -125,6 +128,10 @@ class TetrisGame(object):
             # if rotating would be illegal, check position 1 and 2 blocks to the left and right
             # check check order depending on rotation_direction / doesn't really matter, just check 1 before 2
             check_pos_offset_list = [1, -1]
+            # special case for "I" blocks, append -3 to list
+            # np.array_equiv returns true if one can be broadcast to another
+            if np.array_equiv(self.current_tetris, self.tetris_shapes[5]):
+                check_pos_offset_list.append(-3)
             for pos_offset in check_pos_offset_list:
                 if not self.is_collision(np.rot90(self.current_tetris.copy(), rotation_direction), (self.pos[0] + pos_offset, self.pos[1])):
                     self.pos[0] += pos_offset
