@@ -218,3 +218,30 @@ class TetrisGame(object):
             self.placed_board = np.insert(self.placed_board, self.placed_board.shape[1], attack_row, axis=1)
             self.placed_board = np.delete(self.placed_board, 0, axis=1)
 
+    def get_state(self):
+        # returns list of game state, including:
+        # self.placed_board
+        # self.game_tick_index
+        # self.lines_cleared
+        # self.pos
+        # self.current_tetris
+        # self.upcoming_tetris_list
+        # self.saved_tetris
+        # self.move_hold_valid
+        #
+        # self.get_board_fill()
+        # self.get_board_fill_percentage()
+        # self.get_board_height()
+
+        return [self.placed_board,
+                self.game_tick_index,
+                self.lines_cleared,
+                self.pos,
+                self.current_tetris,
+                self.upcoming_tetris_list,
+                self.saved_tetris,
+                self.move_hold_valid,
+                self.get_board_fill(),
+                self.get_board_fill_percentage(),
+                self.get_board_height()]
+
