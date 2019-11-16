@@ -10,7 +10,8 @@ tetris_colours = [(0, 0, 0),
                   (255, 120, 0),
                   (255, 255, 0),
                   (180, 0, 255),
-                  (0, 220, 220)]
+                  (0, 220, 220),
+                  (128, 128, 128)]
 
 # Pixel Sizes
 tetris_pixel_size = 20
@@ -61,8 +62,7 @@ while run:
             if event.key == pygame.K_x:
                 tetrisGame.move_hold()
             if event.key == pygame.K_d:
-                print(tetrisGame.get_board_fill())  # debug
-                print(tetrisGame.get_board_fill_percentage())  # debug
+                tetrisGame.receive_attack(5)  # debug
 
     # Update game object status
     tetrisGame.game_tick()
@@ -105,8 +105,6 @@ while run:
     text_board_fill_percentage = text_font.render("Board Fill %: " + str(round(tetrisGame.get_board_fill_percentage(), 3)), True, (0, 0, 0), (0, 100, 100))
     text_pos = text_font.render("Position: " + str(tetrisGame.pos), True, (0, 0, 0), (0, 100, 100))
 
-
-    # text.fill((0,0,0))
     # Update screen surface
     screen.blit(surface_board, (250, 10))
     screen.blit(surface_saved, (150, 10))
@@ -118,8 +116,6 @@ while run:
     screen.blit(text_board_fill, (100, 80 + 4 * tetris_pixel_size))
     screen.blit(text_board_fill_percentage, (100, 100 + 4 * tetris_pixel_size))
     screen.blit(text_pos, (100, 120 + 4 * tetris_pixel_size))
-
-
 
     pygame.display.flip()
 

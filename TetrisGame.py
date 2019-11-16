@@ -204,4 +204,17 @@ class TetrisGame(object):
                 max_height = row_x_height
         return max_height
 
+    def receive_attack(self, gap_pos):
+        # adds attack line at top of placed_board with a gap at gap_pos
+        # if gap_pos is None, no gap is given to the attack line, making it un-clearable
+        # check if top row contains items
+        if sum(self.placed_board[:, 0]) != 0:
+            print("Game Over: Attacked")
+            self.game_live = False
+        else:
+            # create row to insert
+            attack_row = np.full(self.board_size[0], 8)
+            attack_row[gap_pos] = 0
+            self.placed_board = np.insert(self.placed_board, self.placed_board.shape[1], attack_row, axis=1)
+            self.placed_board = np.delete(self.placed_board, 0, axis=1)
 
