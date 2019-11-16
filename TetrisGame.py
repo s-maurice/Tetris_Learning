@@ -38,7 +38,7 @@ class TetrisGame(object):
         self.board_size = (10, 24)
         self.placed_board = np.zeros(self.board_size, dtype=int)
         self.game_tick_index = 0
-        self.ticks_per_movedown = 20
+        self.ticks_per_movedown = 30
         self.game_live = True
 
         # Player Position
