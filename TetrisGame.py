@@ -245,3 +245,5 @@ class TetrisGame(object):
                 self.get_board_fill_percentage(),
                 self.get_board_height()]
 
+    def game_reset(self):
+        self.__init__()
