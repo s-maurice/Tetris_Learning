@@ -46,6 +46,8 @@ class TetrisGame(object):
         self.current_tetris = self.get_random_tetris()
         self.upcoming_tetris_list = [self.get_random_tetris() for _ in range(5)]
         self.upcoming_tetris_list = [self.tetris_shapes[5] for _ in range(5)]  # Debug
+        self.saved_tetris = None
+        self.move_hold_valid = True
 
     def get_combined_board(self):
         # Blindly combines board, placing current_tetris on top
@@ -81,30 +83,53 @@ class TetrisGame(object):
         # Return and remove first item from upcoming_tetris_list
         return self.upcoming_tetris_list.pop(0)
 
+    def move_hold(self):
+        # check if swap is allowed
+        if self.move_hold_valid:
+            # saves or swaps the saved block
+            if self.saved_tetris is None:
+                # handle empty saved_tetris case
+                # check if position at top is valid before swapping or moving
+                if self.move_reset_tetris_position(self.upcoming_tetris_list[0]):
+                    self.saved_tetris = self.current_tetris
+                    self.current_tetris = self.get_next_block()
+            else:
+                # swap current_tetris and saved_tetris
+                # check if position at top is valid before swapping or moving
+                if self.move_reset_tetris_position(self.saved_tetris):
+                    self.current_tetris, self.saved_tetris = self.saved_tetris, self.current_tetris
+            self.move_hold_valid = False
+
+    def move_reset_tetris_position(self, check_tetris):
+        # moves the player position to the top of the board, searching for valid positons
+        # if valid position if found, moves position and returns true
+        # if no valid position is found, doesnt move position and returns false
+        for try_offset in range(self.board_size[0]):
+            if not self.is_collision(check_tetris, (self.pos[0] + try_offset, 0)):
+                self.pos[0] += try_offset
+                self.pos[1] = 0
+                return True
+            elif not self.is_collision(check_tetris, (self.pos[0] - try_offset, 0)):
+                self.pos[0] -= try_offset
+                self.pos[1] = 0
+                return True
+        return False
+
     def move_down(self):
         # moves position one block down, checking if block is placed
         # block is placed if there is a collision is pos_y + 1
         if self.is_collision(self.current_tetris, (self.pos[0], self.pos[1] + 1)):
             # Place current block onto the placed_board
             self.placed_board = self.get_combined_board()
-            # Get a new block and reset to top of screen
-            # be aware of bug caused by overhangs that may mean
-            # new block is placed into existing blocks or invalid position
+            # Get a new block
             self.current_tetris = self.get_next_block()
-
-            # check for valid positions at top of screen, return blank to skip over game over
-            for try_offset in range(self.board_size[0]):
-                if not self.is_collision(self.current_tetris, (self.pos[0] + try_offset, 0)):
-                    self.pos[0] += try_offset
-                    self.pos[1] = 0
-                    return
-                elif not self.is_collision(self.current_tetris, (self.pos[0] - try_offset, 0)):
-                    self.pos[0] -= try_offset
-                    self.pos[1] = 0
-                    return
-            # game over if no valid position at pos[1] = 0
-            print("Game Over")
-            self.game_live = False
+            # Reset move_hold_valid
+            self.move_hold_valid = True
+            # Try to move to top of board, game over if no valid position
+            if not self.move_reset_tetris_position(self.current_tetris):
+                # game over if no valid position at pos[1] = 0
+                print("Game Over")
+                self.game_live = False
         else:
             self.pos[1] += 1
 

@@ -50,8 +50,7 @@ while run:
             if event.key == pygame.K_z:
                 tetrisGame.move_rotate(-1)
             if event.key == pygame.K_x:
-                # Debug
-                tetrisGame.clear_rows()
+                tetrisGame.move_hold()
 
     # Update game object stats
     tetrisGame.game_tick()
