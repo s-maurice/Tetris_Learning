@@ -31,6 +31,10 @@ surface_board = pygame.Surface(game_board_size)
 surface_saved = pygame.Surface((4 * tetris_pixel_size, 4 * tetris_pixel_size))
 surface_upcoming = pygame.Surface(((2 * tetris_pixel_size), ((4 * tetris_pixel_size * 5) + upcoming_tetris_display_gap * 5)))
 surface_upcoming.fill((0, 100, 100))
+
+# Create font for text
+text_font = pygame.font.SysFont('Comic Sans MS', 16)
+
 # Create tetris game object
 tetrisGame = TetrisGame.TetrisGame()
 
@@ -56,6 +60,9 @@ while run:
                 tetrisGame.move_rotate(-1)
             if event.key == pygame.K_x:
                 tetrisGame.move_hold()
+            if event.key == pygame.K_d:
+                print(tetrisGame.get_board_fill())  # debug
+                print(tetrisGame.get_board_fill_percentage())  # debug
 
     # Update game object status
     tetrisGame.game_tick()
@@ -90,10 +97,30 @@ while run:
                 tetris_pixel = pygame.Rect((index_x * tetris_pixel_size, (index_y * tetris_pixel_size) + upcoming_gap_offset), (tetris_pixel_size, tetris_pixel_size))
                 pygame.draw.rect(surface_upcoming, tetris_colours[item], tetris_pixel)
 
+    # Draw text
+    text_time = text_font.render("Time: " + str(tetrisGame.game_tick_index), True, (0, 0, 0), (0, 100, 100))
+    text_lines_cleared = text_font.render("Lines Cleared: " + str(tetrisGame.lines_cleared), True, (0, 0, 0), (0, 100, 100))
+    text_board_height = text_font.render("Board Height: " + str(tetrisGame.get_board_height()), True, (0, 0, 0), (0, 100, 100))
+    text_board_fill = text_font.render("Board Fill: " + str(tetrisGame.get_board_fill()), True, (0, 0, 0), (0, 100, 100))
+    text_board_fill_percentage = text_font.render("Board Fill %: " + str(round(tetrisGame.get_board_fill_percentage(), 3)), True, (0, 0, 0), (0, 100, 100))
+    text_pos = text_font.render("Position: " + str(tetrisGame.pos), True, (0, 0, 0), (0, 100, 100))
+
+
+    # text.fill((0,0,0))
     # Update screen surface
     screen.blit(surface_board, (250, 10))
     screen.blit(surface_saved, (150, 10))
     screen.blit(surface_upcoming, (475, 10))
+    # Update screen surface with text
+    screen.blit(text_time, (100, 20 + 4 * tetris_pixel_size))
+    screen.blit(text_lines_cleared, (100, 40 + 4 * tetris_pixel_size))
+    screen.blit(text_board_height, (100, 60 + 4 * tetris_pixel_size))
+    screen.blit(text_board_fill, (100, 80 + 4 * tetris_pixel_size))
+    screen.blit(text_board_fill_percentage, (100, 100 + 4 * tetris_pixel_size))
+    screen.blit(text_pos, (100, 120 + 4 * tetris_pixel_size))
+
+
+
     pygame.display.flip()
 
     # Frame rate limit

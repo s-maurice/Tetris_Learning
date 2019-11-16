@@ -2,7 +2,7 @@ import numpy as np
 
 
 class TetrisGame(object):
-    # Tetris piece colours
+    # Tetris piece colours - not needed here
     tetris_colours = [(0, 0, 0),
                       (255, 0, 0),
                       (0, 150, 0),
@@ -39,6 +39,7 @@ class TetrisGame(object):
         self.placed_board = np.zeros(self.board_size, dtype=int)
         self.game_tick_index = 0
         self.ticks_per_movedown = 30
+        self.lines_cleared = 0
         self.game_live = True
 
         # Player Position
@@ -176,10 +177,31 @@ class TetrisGame(object):
             if 0 not in row:
                 self.placed_board = np.delete(self.placed_board, row_index, axis=1)
                 self.placed_board = np.insert(self.placed_board, 0, np.zeros(self.board_size[0]), axis=1)
+                self.lines_cleared += 1
 
     def game_tick(self):
         if self.game_live:
             self.game_tick_index += 1
-            self.clear_rows()
+            self.clear_rows()  # clear_rows here will clear the blocks quickly
             if self.game_tick_index % self.ticks_per_movedown == 0:
+                # self.clear_rows()  # clear_rows  here will display the blocks for a few moments before removal
                 self.move_down()
+
+    def get_board_fill(self):
+        # returns how many blocks on the placed_board are filled
+        return np.count_nonzero(self.placed_board)
+
+    def get_board_fill_percentage(self):
+        # returns the percentage of the placed_board that is filled
+        return self.get_board_fill() / self.placed_board.size
+
+    def get_board_height(self):
+        # returns the height index of the highest piece on the placed_board
+        max_height = 0
+        for row_x in self.placed_board:
+            row_x_height = len([item for item in row_x if item != 0])
+            if row_x_height > max_height:
+                max_height = row_x_height
+        return max_height
+
+
