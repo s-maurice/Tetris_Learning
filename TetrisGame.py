@@ -45,7 +45,7 @@ class TetrisGame(object):
         self.pos = [int(self.board_size[0] / 2), 0]
         self.current_tetris = self.get_random_tetris()
         self.upcoming_tetris_list = [self.get_random_tetris() for _ in range(5)]
-        self.upcoming_tetris_list = [self.tetris_shapes[5] for _ in range(5)]  # Debug
+        # self.upcoming_tetris_list = [self.tetris_shapes[5] for _ in range(5)]  # Debug
         self.saved_tetris = None
         self.move_hold_valid = True
 
@@ -138,7 +138,11 @@ class TetrisGame(object):
         if not self.is_collision(self.current_tetris, (self.pos[0] + movement_x, self.pos[1])):
             self.pos[0] += movement_x
 
-    def move_drop(self):
+    def move_drop_soft(self, n_drop):
+        # Drop current_tetris n_drop blocks
+        [self.move_down() for _ in range(n_drop)]
+
+    def move_drop_hard(self):
         # Drop current_tetris to lowest position checking for collision for all blocks below
         # use for loop to check is_collision until collision or simply call move_down mu
         for drop_y in range(self.pos[1], self.board_size[1]):
