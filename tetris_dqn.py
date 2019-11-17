@@ -58,7 +58,8 @@ for tick in range(500):
     action_proba = model.predict(inputs)
 
     # store the action
-    action_taken_list.append(np.argmax(action_proba))
+    # action_taken_list.append(np.argmax(action_proba))
+    action_taken_list.append(action_proba)
 
     # do the highest values
     action_space[np.argmax(action_proba)]()
@@ -69,16 +70,18 @@ for tick in range(500):
     # store the reward for training
     reward_list.append(game.game_tick_index)
 
-    # test: fit model
-    # model.fit(inputs, action_taken_list, sample_weight=game.game_tick_index)
+
 
     if not game.game_live:
+        # train the model
+        model.fit(inputs, action_taken_list, sample_weight=game.game_tick_index)
+
         # reset the game if it's over
         print(game.placed_board)
         game.game_reset()
 
 print(reward_list)
-print(action_taken_list)
+# print(action_taken_list)
 # print(inputs_list)
 print(max(reward_list))
 
@@ -86,6 +89,6 @@ print("---------")
 # print(np.array(inputs_list[0]))
 
 # train model with rewards and actions
-model.fit(inputs_list[0], action_taken_list[0], sample_weight=reward_list[0])
+model.fit(inputs_list, action_taken_list, sample_weight=reward_list)
 model.save("model")
 
