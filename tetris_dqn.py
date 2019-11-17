@@ -92,8 +92,7 @@ while continue_train:
         reward_list, inputs_list, action_taken_list = [], [], []
 
         # log progress
-        print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, (total_epochs - epoch) * (time.time() - time_start)))
-        time_start = time.time()
+        print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, ((time.time() - time_start) / (total_epochs - epoch) / total_epochs)))
         # print(game.placed_board)
         epoch += 1
         if epoch == total_epochs:
