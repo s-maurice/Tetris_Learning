@@ -1,3 +1,5 @@
+import time
+
 from keras import Input, Model
 from keras.layers import Dense, Embedding, concatenate, Reshape
 from keras.models import Sequential
@@ -33,11 +35,14 @@ model = Model(inputs=[first_input, second_input, third_input], outputs=output)
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 model.summary()
 
+total_epochs = 200
+
 reward_list, inputs_list, action_taken_list = [], [], []
 epoch = 0
+time_start = time.time()
 game_tick_index_list, lines_cleared_list = [], []
-total_ticks = 500000
-for tick in range(total_ticks):
+continue_train = True
+while continue_train:
     # get observation
     # print(game.get_state())
 
@@ -68,7 +73,8 @@ for tick in range(total_ticks):
 
     # store the reward for training
     # reward_list.append(game.game_tick_index)
-    reward_list.append(game.lines_cleared)
+    # reward_list.append(game.game_tick_index * game.lines_cleared)
+    reward_list.append(game.game_tick_index ** game.lines_cleared)
 
     # check if game is over
     if not game.game_live:
@@ -86,9 +92,12 @@ for tick in range(total_ticks):
         reward_list, inputs_list, action_taken_list = [], [], []
 
         # log progress
-        print("Epoch: {}, GameTicks: {}, LinesCleared: {}, PercentageTotal: {}".format(epoch, game.game_tick_index, game.lines_cleared, tick / total_ticks))
-        print(game.placed_board)
+        print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, (total_epochs - epoch) * (time.time() - time_start)))
+        time_start = time.time()
+        # print(game.placed_board)
         epoch += 1
+        if epoch == total_epochs:
+            continue_train = False
         game_tick_index_list.append(game.game_tick_index)
         lines_cleared_list.append(game.lines_cleared)
 
