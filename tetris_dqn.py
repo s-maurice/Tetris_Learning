@@ -94,7 +94,7 @@ while continue_train:
         epoch += 1
 
         # log progress
-        print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, ((time.time() - time_start) / (1 - ((total_epochs - epoch) / total_epochs)))))
+        print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, (((time.time() - time_start) / (1 - ((total_epochs - epoch) / total_epochs)))) - (time.time() - time_start)))
         # print(game.placed_board)
         if epoch == total_epochs:
             continue_train = False
