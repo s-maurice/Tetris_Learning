@@ -204,6 +204,9 @@ class TetrisGame(object):
                 max_height = row_x_height
         return max_height
 
+    def get_board_height_percentage(self):
+        return self.get_board_height() / self.board_size[1]
+
     def receive_attack(self, gap_pos):
         # adds attack line at top of placed_board with a gap at gap_pos
         # if gap_pos is None, no gap is given to the attack line, making it un-clearable
@@ -233,17 +236,23 @@ class TetrisGame(object):
         # self.get_board_fill_percentage()
         # self.get_board_height()
 
-        return [self.placed_board,
-                self.game_tick_index,
+        # convert current_tetris into (4, 4) shape for consistant shape
+        # create a 4x4 shape array of zeros and place the shape in
+        current_tetris_4x4 = np.zeros((4, 4), dtype=int)
+        current_tetris_4x4[:np.array(self.current_tetris).shape[0], :np.array(self.current_tetris).shape[1]] = self.current_tetris
+
+        return [self.placed_board.tolist(),
+                # self.game_tick_index,
                 self.lines_cleared,
-                self.pos,
-                self.current_tetris,
-                self.upcoming_tetris_list,
-                self.saved_tetris,
-                self.move_hold_valid,
-                self.get_board_fill(),
+                self.pos[0],
+                self.pos[1],
+                current_tetris_4x4,
+                # self.upcoming_tetris_list,
+                # self.saved_tetris,
+                # self.move_hold_valid,
+                # self.get_board_fill(),
                 self.get_board_fill_percentage(),
-                self.get_board_height()]
+                self.get_board_height_percentage()]
 
     def game_reset(self):
         self.__init__()
