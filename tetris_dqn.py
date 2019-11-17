@@ -91,10 +91,11 @@ while continue_train:
         # reset the training data lists
         reward_list, inputs_list, action_taken_list = [], [], []
 
-        # log progress
-        print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, ((time.time() - time_start) / (total_epochs - epoch) / total_epochs)))
-        # print(game.placed_board)
         epoch += 1
+
+        # log progress
+        print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, ((time.time() - time_start) / (1 - ((total_epochs - epoch) / total_epochs)))))
+        # print(game.placed_board)
         if epoch == total_epochs:
             continue_train = False
         game_tick_index_list.append(game.game_tick_index)
