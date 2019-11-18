@@ -49,7 +49,7 @@ dir_files = os.listdir(dir_str)
 model = keras.models.load_model(dir_str + "/" + dir_files[-1])
 model.summary()
 
-epoch_total = 3
+epoch_total = 500
 
 reward_list, inputs_list, action_taken_list = [], [], []
 epoch = 0
@@ -95,6 +95,8 @@ while continue_train:
             input1.append(np.array(entry[1]).reshape(4, 4, 1))
             input2.append(np.array(entry[2]).reshape(5))
 
+        # fit the model
+        # to speed up, perhaps only fit at the end of lines_cleared > 0 epochs
         model.fit([input0, input1, input2], np.array(action_taken_list), sample_weight=np.array(reward_list), verbose=1)
 
         # reset the training data lists
