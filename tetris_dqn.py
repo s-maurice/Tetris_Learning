@@ -74,6 +74,7 @@ while continue_train:
     action_taken_list.append(action_proba[0])
 
     # do the highest value action
+    # TODO initially here, possibly simply take a random action to speed up training
     action_space[np.argmax(action_proba)]()
 
     # tick the game
@@ -99,12 +100,15 @@ while continue_train:
                 input2.append(np.array(entry[2]).reshape(5))
 
             # fit the model
+            # TODO action taken list here may need to be converted
+            #  to have 1 as the correct action and 0s for the wrong actions
             model.fit([input0, input1, input2], np.array(action_taken_list), sample_weight=np.array(reward_list), verbose=1)
 
         # reset the training data lists
         reward_list, inputs_list, action_taken_list = [], [], []
 
         # log progress
+        epoch += 1
         print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, (((time.time() - time_start) / (1 - ((epoch_total - epoch) / epoch_total)))) - (time.time() - time_start)))
         # print(game.placed_board)
         game_tick_index_list.append(game.game_tick_index)
@@ -113,7 +117,6 @@ while continue_train:
         # reset the game
         game.game_reset()
 
-        epoch += 1
         # finish training if epoch limit is reached
         if epoch == epoch_total:
             continue_train = False
