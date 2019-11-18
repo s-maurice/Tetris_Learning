@@ -88,32 +88,35 @@ while continue_train:
     # check if game is over
     if not game.game_live:
         # train the model
-        # split inputs out again
-        input0, input1, input2 = [], [], []
-        for entry in inputs_list:
-            input0.append(np.array(entry[0]).reshape((10, 24, 1)))
-            input1.append(np.array(entry[1]).reshape(4, 4, 1))
-            input2.append(np.array(entry[2]).reshape(5))
 
-        # fit the model
-        # to speed up, perhaps only fit at the end of lines_cleared > 0 epochs
-        model.fit([input0, input1, input2], np.array(action_taken_list), sample_weight=np.array(reward_list), verbose=1)
+        # to speed up, perhaps only fit at the end of epochs with lines_cleared > 0
+        if game.lines_cleared > 0:
+            # split inputs out again
+            input0, input1, input2 = [], [], []
+            for entry in inputs_list:
+                input0.append(np.array(entry[0]).reshape((10, 24, 1)))
+                input1.append(np.array(entry[1]).reshape(4, 4, 1))
+                input2.append(np.array(entry[2]).reshape(5))
+
+            # fit the model
+            model.fit([input0, input1, input2], np.array(action_taken_list), sample_weight=np.array(reward_list), verbose=1)
 
         # reset the training data lists
         reward_list, inputs_list, action_taken_list = [], [], []
 
-        epoch += 1
-
         # log progress
         print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, (((time.time() - time_start) / (1 - ((epoch_total - epoch) / epoch_total)))) - (time.time() - time_start)))
         # print(game.placed_board)
-        if epoch == epoch_total:
-            continue_train = False
         game_tick_index_list.append(game.game_tick_index)
         lines_cleared_list.append(game.lines_cleared)
 
         # reset the game
         game.game_reset()
+
+        epoch += 1
+        # finish training if epoch limit is reached
+        if epoch == epoch_total:
+            continue_train = False
 
 
 print("---------")
