@@ -1,5 +1,9 @@
 import time
 
+import keras
+import pandas as pd
+import os
+
 from keras import Input, Model
 from keras.layers import Dense, concatenate, Conv2D, Flatten, MaxPooling2D
 import numpy as np
@@ -14,32 +18,38 @@ action_space = [lambda: game.move_rotate(1),
                 lambda: game.move_drop_hard()]
 
 # define model, not using sequential
-first_input = Input(shape=(10, 24, 1))  # placed board
-first_dense = Conv2D(240, 4, use_bias=True)(first_input)
-first_dense = MaxPooling2D()(first_dense)
-first_dense = Dense(400, )(first_dense)
-first_dense = Flatten()(first_dense)
+# first_input = Input(shape=(10, 24, 1))  # placed board
+# first_dense = Conv2D(240, 4, use_bias=True)(first_input)
+# first_dense = MaxPooling2D()(first_dense)
+# first_dense = Dense(400, )(first_dense)
+# first_dense = Flatten()(first_dense)
+#
+# second_input = Input(shape=(4, 4, 1))  # current piece
+# second_dense = Conv2D(16, 2, use_bias=True)(second_input)
+# second_dense = MaxPooling2D()(second_dense)
+# second_dense = Dense(100, )(second_dense)
+# second_dense = Flatten()(second_dense)
+#
+# merge_one = concatenate([first_dense, second_dense])
+# merge_one = Dense(350)(merge_one)
+#
+# third_input = Input(shape=(5, ))  # single dim values
+# third_dense = Dense(200, )(third_input)
+# merge_two = concatenate([merge_one, third_dense])
+#
+# output = Dense(4)(merge_two)
+#
+# model = Model(inputs=[first_input, second_input, third_input], outputs=output)
+# model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+# model.summary()
 
-second_input = Input(shape=(4, 4, 1))  # current piece
-second_dense = Conv2D(16, 2, use_bias=True)(second_input)
-second_dense = MaxPooling2D()(second_dense)
-second_dense = Dense(100, )(second_dense)
-second_dense = Flatten()(second_dense)
-
-merge_one = concatenate([first_dense, second_dense])
-merge_one = Dense(350)(merge_one)
-
-third_input = Input(shape=(5, ))  # single dim values
-third_dense = Dense(200, )(third_input)
-merge_two = concatenate([merge_one, third_dense])
-
-output = Dense(4)(merge_two)
-
-model = Model(inputs=[first_input, second_input, third_input], outputs=output)
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+# load model
+dir_str = "tetris_dqn_training/tetris_dqn_models"
+dir_files = os.listdir(dir_str)
+model = keras.models.load_model(dir_str + "/" + dir_files[-1])
 model.summary()
 
-total_epochs = 5
+epoch_total = 3
 
 reward_list, inputs_list, action_taken_list = [], [], []
 epoch = 0
@@ -47,12 +57,6 @@ time_start = time.time()
 game_tick_index_list, lines_cleared_list = [], []
 continue_train = True
 while continue_train:
-    # get observation
-    # print(game.get_state())
-
-    # do an action
-    # [print(np.array(item).shape) for item in game.get_state()]
-
     # sort out inputs
     game_state = game.get_state()
     onedim_inputs = [game_state[1], game_state[2], game_state[3], game_state[5], game_state[6]]
@@ -69,7 +73,7 @@ while continue_train:
     # action_taken_list.append(np.argmax(action_proba))
     action_taken_list.append(action_proba[0])
 
-    # do the highest values
+    # do the highest value action
     action_space[np.argmax(action_proba)]()
 
     # tick the game
@@ -99,9 +103,9 @@ while continue_train:
         epoch += 1
 
         # log progress
-        print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, (((time.time() - time_start) / (1 - ((total_epochs - epoch) / total_epochs)))) - (time.time() - time_start)))
+        print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, (((time.time() - time_start) / (1 - ((epoch_total - epoch) / epoch_total)))) - (time.time() - time_start)))
         # print(game.placed_board)
-        if epoch == total_epochs:
+        if epoch == epoch_total:
             continue_train = False
         game_tick_index_list.append(game.game_tick_index)
         lines_cleared_list.append(game.lines_cleared)
@@ -116,25 +120,18 @@ print("ended")
 print(game_tick_index_list)
 print(lines_cleared_list)
 
-# Plot the training progress
-fig, ax1 = plt.subplots()
-ax1.set_ylabel('Game Ticks at Game Over', color="r")
-ax1.tick_params(axis='y', labelcolor="r")
-line1 = ax1.plot(game_tick_index_list, label="Game Ticks Survived", color="r")
-ax1.set_xlabel('Game Number')
+# save model and training data
+files_list = os.listdir("tetris_dqn_training/tetris_dqn_models")
+files_list.sort()
 
-ax2 = ax1.twinx()
-ax2.set_ylabel('Lines Cleared at Game Over', color="b")
-ax2.tick_params(axis='y', labelcolor="b")
-line2 = ax2.plot(lines_cleared_list, label="Lines Cleared", color="b")
+if len(files_list) == 0:
+    epoch_start = 0
+    file_index = 0
+else:
+    file_index = int(files_list[-1].split("_")[0]) + 1
+    epoch_start = int(files_list[-1].split("_")[-1].split(".h5")[0])
 
-lines = line1+line2
-labels = [l.get_label() for l in lines]
-ax1.legend(lines, labels, loc="upper right")
-
-fig.tight_layout()
-plt.show()
-
-# save model
-model.save("model.h5")
+epoch_end = epoch_start + epoch
+model.save("tetris_dqn_training/tetris_dqn_models/{}_tetris_dqn_model_{}_{}.h5".format(file_index, epoch_start, epoch_end))
+pd.DataFrame([game_tick_index_list, lines_cleared_list]).to_csv("tetris_dqn_training/tetris_dqn_progress/{}_tetris_dqn_progress_{}_{}.csv".format(file_index, epoch_start, epoch_end), index=False)
 
