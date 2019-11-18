@@ -240,8 +240,17 @@ class TetrisGame(object):
         # create a 4x4 shape array of zeros and place the shape in
         current_tetris_4x4 = np.zeros((4, 4), dtype=int)
         current_tetris_4x4[:np.array(self.current_tetris).shape[0], :np.array(self.current_tetris).shape[1]] = self.current_tetris
+        # convert values to ones
+        current_tetris_4x4[current_tetris_4x4 >= 1] = 1
 
-        return [self.placed_board.tolist(),
+        # convert values in placed_board to ones
+        placed_board = self.placed_board.copy()
+        placed_board[placed_board >= 1] = 1
+        print(placed_board)
+
+        # create synthetic showing where to place to clear lines
+
+        return [placed_board.tolist(),
                 # self.game_tick_index,
                 self.lines_cleared,
                 self.pos[0],
