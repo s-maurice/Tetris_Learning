@@ -246,9 +246,10 @@ class TetrisGame(object):
         # convert values in placed_board to ones
         placed_board = self.placed_board.copy()
         placed_board[placed_board >= 1] = 1
-        print(placed_board)
 
         # create synthetic showing where to place to clear lines
+        # create synthetic to show position of current block when placed
+        # these two synthetics could be combined in one branch of the network to find placement position
 
         return [placed_board.tolist(),
                 # self.game_tick_index,

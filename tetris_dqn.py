@@ -1,8 +1,7 @@
 import time
 
 from keras import Input, Model
-from keras.layers import Dense, Embedding, concatenate, Reshape, Conv2D, Flatten, MaxPooling2D
-from keras.models import Sequential
+from keras.layers import Dense, concatenate, Conv2D, Flatten, MaxPooling2D
 import numpy as np
 import matplotlib.pyplot as plt
 
