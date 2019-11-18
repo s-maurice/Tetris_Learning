@@ -1,7 +1,7 @@
 import time
 
 from keras import Input, Model
-from keras.layers import Dense, Embedding, concatenate, Reshape
+from keras.layers import Dense, Embedding, concatenate, Reshape, Conv2D, Flatten, MaxPooling2D
 from keras.models import Sequential
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,27 +15,32 @@ action_space = [lambda: game.move_rotate(1),
                 lambda: game.move_drop_hard()]
 
 # define model, not using sequential
-first_input = Input(shape=(10, 24))  # placed board
-first_dense = Dense(100, )(first_input)
-first_dense = Reshape((1000,))(first_dense)
+first_input = Input(shape=(10, 24, 1))  # placed board
+first_dense = Conv2D(240, 4, use_bias=True)(first_input)
+first_dense = MaxPooling2D()(first_dense)
+first_dense = Dense(400, )(first_dense)
+first_dense = Flatten()(first_dense)
 
-
-second_input = Input(shape=(4, 4))  # current piece
-second_dense = Dense(250, )(second_input)
-second_dense = Reshape((1000,))(second_dense)
+second_input = Input(shape=(4, 4, 1))  # current piece
+second_dense = Conv2D(16, 2, use_bias=True)(second_input)
+second_dense = MaxPooling2D()(second_dense)
+second_dense = Dense(100, )(second_dense)
+second_dense = Flatten()(second_dense)
 
 merge_one = concatenate([first_dense, second_dense])
+merge_one = Dense(350)(merge_one)
 
 third_input = Input(shape=(5, ))  # single dim values
-merge_two = concatenate([merge_one, third_input])
+third_dense = Dense(200, )(third_input)
+merge_two = concatenate([merge_one, third_dense])
 
-output = Dense(4, input_shape=(2005, ))(merge_two)
+output = Dense(4)(merge_two)
 
 model = Model(inputs=[first_input, second_input, third_input], outputs=output)
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 model.summary()
 
-total_epochs = 200
+total_epochs = 5
 
 reward_list, inputs_list, action_taken_list = [], [], []
 epoch = 0
@@ -57,8 +62,8 @@ while continue_train:
     inputs_list.append([game_state[0], game_state[4], onedim_inputs])
 
     # perform a prediction, reshape to add batch size of 1
-    action_proba = model.predict([np.array(game_state[0]).reshape((1, 10, 24)),
-                                  np.array(game_state[4]).reshape((1, 4, 4)),
+    action_proba = model.predict([np.array(game_state[0]).reshape((1, 10, 24, 1)),
+                                  np.array(game_state[4]).reshape((1, 4, 4, 1)),
                                   np.array(onedim_inputs).reshape(1, 5)])
 
     # store the action
@@ -72,9 +77,10 @@ while continue_train:
     game.game_tick()
 
     # store the reward for training
+    reward_list.append(game.lines_cleared - sum(reward_list))
     # reward_list.append(game.game_tick_index)
     # reward_list.append(game.game_tick_index * game.lines_cleared)
-    reward_list.append(game.game_tick_index ** game.lines_cleared)
+    # reward_list.append(game.game_tick_index ** game.lines_cleared)
 
     # check if game is over
     if not game.game_live:
@@ -82,9 +88,9 @@ while continue_train:
         # split inputs out again
         input0, input1, input2 = [], [], []
         for entry in inputs_list:
-            input0.append(entry[0])
-            input1.append(entry[1])
-            input2.append(entry[2])
+            input0.append(np.array(entry[0]).reshape((10, 24, 1)))
+            input1.append(np.array(entry[1]).reshape(4, 4, 1))
+            input2.append(np.array(entry[2]).reshape(5))
 
         model.fit([input0, input1, input2], np.array(action_taken_list), sample_weight=np.array(reward_list), verbose=1)
 
