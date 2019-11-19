@@ -50,6 +50,7 @@ model = keras.models.load_model(dir_str + "/" + dir_files[-1])
 model.summary()
 
 epoch_total = 500
+use_model_prediction = False
 
 reward_list, inputs_list, action_taken_list = [], [], []
 epoch = 0
@@ -64,18 +65,27 @@ while continue_train:
     # store the inputs
     inputs_list.append([game_state[0], game_state[4], onedim_inputs])
 
-    # perform a prediction, reshape to add batch size of 1
-    action_proba = model.predict([np.array(game_state[0]).reshape((1, 10, 24, 1)),
-                                  np.array(game_state[4]).reshape((1, 4, 4, 1)),
-                                  np.array(onedim_inputs).reshape(1, 5)])
+    if use_model_prediction:
+        # make a prediction, reshape to add batch size of 1
+        action_proba = model.predict([np.array(game_state[0]).reshape((1, 10, 24, 1)),
+                                      np.array(game_state[4]).reshape((1, 4, 4, 1)),
+                                      np.array(onedim_inputs).reshape(1, 5)])
 
-    # store the action
-    # action_taken_list.append(np.argmax(action_proba))
-    action_taken_list.append(action_proba[0])
+        # store the action
+        action_taken_list.append(action_proba[0])
 
-    # do the highest value action
-    # TODO initially here, possibly simply take a random action to speed up training
-    action_space[np.argmax(action_proba)]()
+        # do the highest value action
+        action_space[int(np.argmax(action_proba))]()
+    else:
+        # randomly select an action
+        action_to_take = np.random.randint(len(action_space))
+        # store the randomly selected action
+        action_proba = np.zeros(len(action_space))
+        action_proba[action_to_take] = 1
+        action_taken_list.append(action_proba)
+
+        # do the randomly selected action
+        action_space[action_to_take]()
 
     # tick the game
     game.game_tick()
@@ -99,10 +109,14 @@ while continue_train:
                 input1.append(np.array(entry[1]).reshape(4, 4, 1))
                 input2.append(np.array(entry[2]).reshape(5))
 
+            # convert action list to have full confidence in chosen action
+            action_taken_list = np.array(action_taken_list)
+            action_taken_list_abs = np.zeros_like(action_taken_list)
+            action_taken_list[np.argmax(action_taken_list)] = 1
+            print(action_taken_list_abs)
+
             # fit the model
-            # TODO action taken list here may need to be converted
-            #  to have 1 as the correct action and 0s for the wrong actions
-            model.fit([input0, input1, input2], np.array(action_taken_list), sample_weight=np.array(reward_list), verbose=1)
+            model.fit([input0, input1, input2], action_taken_list_abs, sample_weight=np.array(reward_list), verbose=1)
 
         # reset the training data lists
         reward_list, inputs_list, action_taken_list = [], [], []
