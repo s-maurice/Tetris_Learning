@@ -49,7 +49,7 @@ dir_files = os.listdir(dir_str)
 model = keras.models.load_model(dir_str + "/" + dir_files[-1])
 model.summary()
 
-epoch_total = 50000
+epoch_total = 5000
 use_model_prediction = False
 
 reward_list, inputs_list, action_taken_list = [], [], []
@@ -147,7 +147,7 @@ print("Max Ticks Survived: {} Max Lines Cleared: {}".format(np.max(game_tick_ind
 
 # save model and training data
 files_list = os.listdir("tetris_dqn_training/tetris_dqn_models")
-files_list.sort()
+files_list.sort(key=lambda x:int(x.split("_")[0]))
 
 if len(files_list) == 0:
     epoch_start = 0

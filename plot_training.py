@@ -4,7 +4,7 @@ import pandas as pd
 
 dir_str = "tetris_dqn_training/tetris_dqn_progress"
 dir_file_list = os.listdir(dir_str)
-dir_file_list.sort()
+dir_file_list.sort(key=lambda x:int(x.split("_")[0]))
 
 df_list = []
 for file_str in dir_file_list:
@@ -17,13 +17,13 @@ print(data)
 fig, ax1 = plt.subplots()
 ax1.set_ylabel('Game Ticks at Game Over', color="r")
 ax1.tick_params(axis='y', labelcolor="r")
-line1 = ax1.plot(data[1], label="Game Ticks Survived", color="r")
+line1 = ax1.plot(data[1], label="Game Ticks Survived", color="r", alpha=0.5)
 ax1.set_xlabel('Game Number')
 
 ax2 = ax1.twinx()
 ax2.set_ylabel('Lines Cleared at Game Over', color="b")
 ax2.tick_params(axis='y', labelcolor="b")
-line2 = ax2.plot(data[2], label="Lines Cleared", color="b")
+line2 = ax2.plot(data[2], label="Lines Cleared", color="b", alpha=0.5)
 
 lines = line1+line2
 labels = [l.get_label() for l in lines]
