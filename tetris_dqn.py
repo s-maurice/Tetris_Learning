@@ -49,7 +49,7 @@ dir_files = os.listdir(dir_str)
 model = keras.models.load_model(dir_str + "/" + dir_files[-1])
 model.summary()
 
-epoch_total = 500
+epoch_total = 50000
 use_model_prediction = False
 
 reward_list, inputs_list, action_taken_list = [], [], []
@@ -112,8 +112,8 @@ while continue_train:
             # convert action list to have full confidence in chosen action
             action_taken_list = np.array(action_taken_list)
             action_taken_list_abs = np.zeros_like(action_taken_list)
-            action_taken_list[np.argmax(action_taken_list)] = 1
-            print(action_taken_list_abs)
+            for index, row in enumerate(action_taken_list_abs):
+                row[np.argmax(action_taken_list[index])] = 1
 
             # fit the model
             model.fit([input0, input1, input2], action_taken_list_abs, sample_weight=np.array(reward_list), verbose=1)
@@ -141,6 +141,9 @@ print("ended")
 
 print(game_tick_index_list)
 print(lines_cleared_list)
+
+print("Average Ticks Survived: {} Average Lines Cleared: {}".format(np.average(game_tick_index_list), np.average(lines_cleared_list)))
+print("Max Ticks Survived: {} Max Lines Cleared: {}".format(np.max(game_tick_index_list), np.max(lines_cleared_list)))
 
 # save model and training data
 files_list = os.listdir("tetris_dqn_training/tetris_dqn_models")
