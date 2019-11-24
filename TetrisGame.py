@@ -260,7 +260,6 @@ class TetrisGame(object):
                 # self.upcoming_tetris_list,
                 # self.saved_tetris,
                 # self.move_hold_valid,
-                # self.get_board_fill(),
                 self.get_board_fill_percentage(),
                 self.get_board_height_percentage()]
 

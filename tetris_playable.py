@@ -87,7 +87,7 @@ while run:
     # Draw the upcoming blocks
     for upcoming_index, upcoming_tetris in enumerate(tetrisGame.upcoming_tetris_list):
 
-        # create a 4x4 shape array of zeros and place the shape in
+        # create a 2x4 shape array of zeros and place the shape in
         draw_upcoming_tetris = np.zeros((2, 4), dtype=int)
         draw_upcoming_tetris[:np.array(upcoming_tetris).shape[0], :np.array(upcoming_tetris).shape[1]] = upcoming_tetris
 

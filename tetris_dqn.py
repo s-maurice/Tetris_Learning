@@ -22,13 +22,13 @@ action_space = [lambda: game.move_rotate(1),
 # first_dense = Conv2D(240, 4, use_bias=True)(first_input)
 # first_dense = MaxPooling2D()(first_dense)
 # first_dense = Dense(400, )(first_dense)
-# first_dense = Flatten()(first_dense)
+# first_dense = Flatten()(first_dense)  # flatten layer needed to convert 4d into 2d
 #
 # second_input = Input(shape=(4, 4, 1))  # current piece
 # second_dense = Conv2D(16, 2, use_bias=True)(second_input)
 # second_dense = MaxPooling2D()(second_dense)
 # second_dense = Dense(100, )(second_dense)
-# second_dense = Flatten()(second_dense)
+# second_dense = Flatten()(second_dense)  # flatten layer needed to convert 4d into 2d
 #
 # merge_one = concatenate([first_dense, second_dense])
 # merge_one = Dense(350)(merge_one)
@@ -49,8 +49,8 @@ dir_files = os.listdir(dir_str)
 model = keras.models.load_model(dir_str + "/" + dir_files[-1])
 model.summary()
 
-epoch_total = 5000
-use_model_prediction = False
+epoch_total = 1000
+use_model_prediction = True
 
 reward_list, inputs_list, action_taken_list = [], [], []
 epoch = 0
