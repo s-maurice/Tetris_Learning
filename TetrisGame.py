@@ -59,7 +59,7 @@ class TetrisGame(object):
                     if not item == 0:
                         combined_board[self.pos[0] + cur_tetris_index_x, self.pos[1] + cur_tetris_index_y] = item
         except IndexError:
-            # this means a move is illegal - catch so that drawing methods still draw the board
+            # this means a move is illegal - catch for drawing methods still draw the board without checking validity
             return self.placed_board
         return combined_board
 
@@ -75,7 +75,7 @@ class TetrisGame(object):
                     if (item != 0) and (self.placed_board[check_pos[0] + cur_tetris_index_x, check_pos[1] + cur_tetris_index_y] != 0):
                         return True
                 except IndexError:
-                    # catches indexerror for "I" blocks on the right side of board
+                    # catches IndexError for "I" blocks on the right side of board
                     return True
         return False
 

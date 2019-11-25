@@ -50,8 +50,9 @@ dir_files = os.listdir(dir_str)
 model = keras.models.load_model(dir_str + "/" + dir_files[-1])
 model.summary()
 
-epoch_total = 100
-mutate_threshold = 0.5
+epoch_total = 500
+# how often the model's move is used versus a random move
+mutate_threshold = 0.5  # 0 = all model moves, 1 = all random moves
 
 drawBoard = DrawBoard()
 
