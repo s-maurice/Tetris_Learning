@@ -211,6 +211,19 @@ class TetrisGame(object):
     def get_board_height_percentage(self):
         return self.get_board_height() / self.board_size[1]
 
+    def get_top_line_gaps(self):
+        # returns a 1xWidth slice of the top board line containing placed items
+        # 1 = empty spot, 0 = occupied by a placed tetris
+        top_line_index = self.get_board_height()
+        if top_line_index == 0:
+            # return a fully empty slice
+            top_line_slice = np.zeros(self.board_size[0], dtype="int")
+        else:
+            top_line_slice = self.placed_board.copy()[:, self.board_size[1] - top_line_index]
+        top_line_slice[top_line_slice >= 1] = 1  # set all colours to 1
+        top_line_slice = 1 - top_line_slice  # invert
+        return top_line_slice
+
     def receive_attack(self, gap_pos):
         # adds attack line at top of placed_board with a gap at gap_pos
         # if gap_pos is None, no gap is given to the attack line, making it un-clearable
@@ -264,6 +277,7 @@ class TetrisGame(object):
                 # self.upcoming_tetris_list,
                 # self.saved_tetris,
                 # self.move_hold_valid,
+                # self.get_top_line_gaps(),
                 self.get_board_fill_percentage(),
                 self.get_board_height_percentage()]
 
