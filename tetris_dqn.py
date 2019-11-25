@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from TetrisGame import TetrisGame
+from DrawBoard import DrawBoard
 
 game = TetrisGame()
 action_space = [lambda: game.move_rotate(1),
@@ -49,8 +50,10 @@ dir_files = os.listdir(dir_str)
 model = keras.models.load_model(dir_str + "/" + dir_files[-1])
 model.summary()
 
-epoch_total = 1000
+epoch_total = 100
 use_model_prediction = True
+
+drawBoard = DrawBoard()
 
 reward_list, inputs_list, action_taken_list = [], [], []
 epoch = 0
@@ -89,6 +92,10 @@ while continue_train:
 
     # tick the game
     game.game_tick()
+
+    # draw the board
+    # drawBoard.draw_board(game_state[0])
+    drawBoard.draw_board(game.get_combined_board())
 
     # store the reward for training
     reward_list.append(game.lines_cleared - sum(reward_list))

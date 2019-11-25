@@ -14,10 +14,15 @@ playing against heuristic opponent
 Training Strategies:
 recording human-player inputs and features and warm starting model
 randomly selecting action from action space at the beginning to increase training speed
+randomly mutate the model by randomly choosing to use the model decision or a random decision
 
 Notes - Features to be added:
 increase action space to contain all possible actions
 add feature for locations to clear top line - 1x10 slice of gap locations
 add feature for distance to drop point to clear line
 add feature for number of empty spaces on top line
-convert draw_board into class, allowing for func calling to draw any board - used to illustrate boards during training
+add feature for the number of horizontal and vertical blocks the current piece and saved piece take up - to help determine rotation
+convert draw_board into class, allowing for func calling to draw any board - used to illustrate boards during training (done)
+change reward function to reward keeping the board height low - so it tries to avoid stacking up
+
+alternative methodology - give all the locations of the possible placements and have the model decide between them

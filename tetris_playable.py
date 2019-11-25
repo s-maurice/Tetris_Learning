@@ -2,6 +2,7 @@ import TetrisGame
 import pygame
 import numpy as np
 
+
 # Tetris piece colours
 tetris_colours = [(0, 0, 0),
                   (255, 0, 0),
