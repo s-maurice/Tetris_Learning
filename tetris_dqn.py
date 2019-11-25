@@ -51,7 +51,7 @@ model = keras.models.load_model(dir_str + "/" + dir_files[-1])
 model.summary()
 
 epoch_total = 100
-use_model_prediction = True
+mutate_threshold = 0.5
 
 drawBoard = DrawBoard()
 
@@ -67,6 +67,11 @@ while continue_train:
 
     # store the inputs
     inputs_list.append([game_state[0], game_state[4], onedim_inputs])
+
+    # here decide whether or not to use the model prediction or a random prediction
+    # this helps the model mutate and improve
+    # threshold value is predetermined
+    use_model_prediction = True if np.random.rand() > mutate_threshold else False
 
     if use_model_prediction:
         # make a prediction, reshape to add batch size of 1

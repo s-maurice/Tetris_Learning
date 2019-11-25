@@ -53,10 +53,14 @@ class TetrisGame(object):
     def get_combined_board(self):
         # Blindly combines board, placing current_tetris on top
         combined_board = self.placed_board.copy()  # Start with combined_board
-        for cur_tetris_index_x, row_x in enumerate(self.current_tetris):
-            for cur_tetris_index_y, item in enumerate(row_x):
-                if not item == 0:
-                    combined_board[self.pos[0] + cur_tetris_index_x, self.pos[1] + cur_tetris_index_y] = item
+        try:
+            for cur_tetris_index_x, row_x in enumerate(self.current_tetris):
+                for cur_tetris_index_y, item in enumerate(row_x):
+                    if not item == 0:
+                        combined_board[self.pos[0] + cur_tetris_index_x, self.pos[1] + cur_tetris_index_y] = item
+        except IndexError:
+            # this means a move is illegal - catch so that drawing methods still draw the board
+            return self.placed_board
         return combined_board
 
     def is_collision(self, check_tetris, check_pos):
