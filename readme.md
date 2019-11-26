@@ -20,8 +20,8 @@ Notes - Features to be added:
 increase action space to contain all possible actions
 add feature for locations to clear top line - 1x10 slice of gap locations (done)
 add feature for distance and rotation to drop point to clear line
-add feature for the complete board when the piece is dropped right now
-add feature to show if dropping would clear a line
+add feature for the complete board when the piece is dropped right now (done)
+add feature to show if dropping would clear a line (done)
 add feature for width and height of current piece (done)
 add feature for the number of horizontal and vertical blocks the current piece and saved piece take up - to help determine rotation (done)
 convert draw_board into class, allowing for func calling to draw any board - used to illustrate boards during training (done)
