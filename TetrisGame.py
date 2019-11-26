@@ -197,7 +197,7 @@ class TetrisGame(object):
 
     def get_board_fill_percentage(self, board):
         # returns the percentage of the placed_board that is filled
-        return self.get_board_fill(board) / board
+        return self.get_board_fill(board) / board.size
 
     def get_board_height(self, board):
         # returns the height index of the highest piece on the placed_board
@@ -259,6 +259,11 @@ class TetrisGame(object):
         current_tetris_4x4[:np.array(self.current_tetris).shape[0], :np.array(self.current_tetris).shape[1]] = self.current_tetris
         # convert values to ones
         current_tetris_4x4[current_tetris_4x4 >= 1] = 1
+        
+        saved_tetris_4x4 = np.zeros((4, 4), dtype=int)
+        saved_tetris_4x4[:np.array(self.saved_tetris).shape[0], :np.array(self.saved_tetris).shape[1]] = self.saved_tetris
+        # convert values to ones
+        saved_tetris_4x4[saved_tetris_4x4 >= 1] = 1
 
         # convert values in placed_board to ones
         placed_board = self.placed_board.copy()
@@ -298,18 +303,27 @@ class TetrisGame(object):
                                     dropped_board_lines_cleared += 1
                 break
 
+        # convert move_hold_valid into 1 or 0
+        move_hold_valid = 1 if self.move_hold_valid else 0
+
         return [placed_board.tolist(),
                 # self.game_tick_index,
                 self.lines_cleared,
                 self.pos[0],
                 self.pos[1],
+                # tetris_current_width,
+                # tetris_current_height,
+                # tetris_current_width_lowest,
+                # tetris_saved_width,
+                # tetris_saved_height,
+                # tetris_saved_width_lowest,
                 current_tetris_4x4,
+                # saved_tetris_4x4,
                 # dropped_board,
                 # dropped_board_height_percentage,
                 # dropped_board_lines_cleared,
-                # self.upcoming_tetris_list,
-                # self.saved_tetris,
-                # self.move_hold_valid,
+                # self.upcoming_tetris_list,  # don't use this yet
+                # move_hold_valid
                 # self.get_top_line_gaps(),
                 self.get_board_fill_percentage(self.placed_board),
                 self.get_board_height_percentage(self.placed_board)]
