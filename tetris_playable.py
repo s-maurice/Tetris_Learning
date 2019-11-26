@@ -65,6 +65,7 @@ while run:
             if event.key == pygame.K_d:
                 tetrisGame.receive_attack(5)  # debug
             if event.key == pygame.K_e:
+                tetrisGame.get_state()
                 print(tetrisGame.get_top_line_gaps())  # debug
 
     # Update game object status

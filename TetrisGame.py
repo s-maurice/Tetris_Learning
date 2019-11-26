@@ -264,6 +264,21 @@ class TetrisGame(object):
         placed_board = self.placed_board.copy()
         placed_board[placed_board >= 1] = 1
 
+        # create synthetics for width and height of the current piece and saved piece and rotation
+        # create synthetics for the width of the lowest block of the current and saved piece
+        tetris_current_width = len(self.current_tetris)  # width
+        tetris_current_height = len(self.current_tetris[0])  # height
+        tetris_current_width_lowest = sum([i > 0 for i in np.array(self.current_tetris)[:, -1]])
+
+        if self.saved_tetris is not None:
+            tetris_saved_width = len(self.saved_tetris)
+            tetris_saved_height = len(self.saved_tetris[0])
+            tetris_saved_width_lowest = sum([i > 0 for i in np.array(self.saved_tetris)[:, -1]])
+        else:
+            tetris_saved_width = 0
+            tetris_saved_height = 0
+            tetris_saved_width_lowest = 0
+
         # create synthetic showing where to place to clear lines
         # create synthetic to show position of current block when placed
         # these two synthetics could be combined in one branch of the network to find placement position

@@ -72,7 +72,7 @@ while continue_train:
     # here decide whether or not to use the model prediction or a random prediction
     # this helps the model mutate and improve
     # threshold value is predetermined
-    use_model_prediction = True if np.random.rand() > mutate_threshold else False
+    use_model_prediction = np.random.rand() > mutate_threshold
 
     if use_model_prediction:
         # make a prediction, reshape to add batch size of 1
