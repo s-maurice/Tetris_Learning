@@ -66,7 +66,7 @@ while run:
                 tetrisGame.receive_attack(5)  # debug
             if event.key == pygame.K_e:
                 tetrisGame.get_state()
-                print(tetrisGame.get_top_line_gaps())  # debug
+                # print(tetrisGame.get_top_line_gaps())  # debug
 
     # Update game object status
     tetrisGame.game_tick()
@@ -104,9 +104,9 @@ while run:
     # Draw text
     text_time = text_font.render("Time: " + str(tetrisGame.game_tick_index), True, (0, 0, 0), (0, 100, 100))
     text_lines_cleared = text_font.render("Lines Cleared: " + str(tetrisGame.lines_cleared), True, (0, 0, 0), (0, 100, 100))
-    text_board_height = text_font.render("Board Height: " + str(tetrisGame.get_board_height()), True, (0, 0, 0), (0, 100, 100))
-    text_board_fill = text_font.render("Board Fill: " + str(tetrisGame.get_board_fill()), True, (0, 0, 0), (0, 100, 100))
-    text_board_fill_percentage = text_font.render("Board Fill %: " + str(round(tetrisGame.get_board_fill_percentage(), 3)), True, (0, 0, 0), (0, 100, 100))
+    text_board_height = text_font.render("Board Height: " + str(tetrisGame.get_board_height(tetrisGame.placed_board)), True, (0, 0, 0), (0, 100, 100))
+    text_board_fill = text_font.render("Board Fill: " + str(tetrisGame.get_board_fill(tetrisGame.placed_board)), True, (0, 0, 0), (0, 100, 100))
+    text_board_fill_percentage = text_font.render("Board Fill %: " + str(round(tetrisGame.get_board_fill_percentage(tetrisGame.placed_board), 3)), True, (0, 0, 0), (0, 100, 100))
     text_pos = text_font.render("Position: " + str(tetrisGame.pos), True, (0, 0, 0), (0, 100, 100))
 
     # Update screen surface

@@ -191,30 +191,30 @@ class TetrisGame(object):
                 # self.clear_rows()  # clear_rows  here will display the blocks for a few moments before removal
                 self.move_down()
 
-    def get_board_fill(self):
+    def get_board_fill(self, board):
         # returns how many blocks on the placed_board are filled
-        return np.count_nonzero(self.placed_board)
+        return np.count_nonzero(board)
 
-    def get_board_fill_percentage(self):
+    def get_board_fill_percentage(self, board):
         # returns the percentage of the placed_board that is filled
-        return self.get_board_fill() / self.placed_board.size
+        return self.get_board_fill(board) / board
 
-    def get_board_height(self):
+    def get_board_height(self, board):
         # returns the height index of the highest piece on the placed_board
         max_height = 0
-        for row_x in self.placed_board:
+        for row_x in board:
             row_x_height = len([item for item in row_x if item != 0])
             if row_x_height > max_height:
                 max_height = row_x_height
         return max_height
 
-    def get_board_height_percentage(self):
-        return self.get_board_height() / self.board_size[1]
+    def get_board_height_percentage(self, board):
+        return self.get_board_height(board) / self.board_size[1]
 
     def get_top_line_gaps(self):
         # returns a 1xWidth slice of the top board line containing placed items
         # 1 = empty spot, 0 = occupied by a placed tetris
-        top_line_index = self.get_board_height()
+        top_line_index = self.get_board_height(self.placed_board)
         if top_line_index == 0:
             # return a fully empty slice
             top_line_slice = np.zeros(self.board_size[0], dtype="int")
@@ -279,9 +279,20 @@ class TetrisGame(object):
             tetris_saved_height = 0
             tetris_saved_width_lowest = 0
 
-        # create synthetic showing where to place to clear lines
-        # create synthetic to show position of current block when placed
-        # these two synthetics could be combined in one branch of the network to find placement position
+        # create synthetic to show board if current block is immediately placed
+        # create synthetic to show the height of the resultant board
+        # code modified from move_drop_hard and get_combined_board
+        for drop_y in range(self.pos[1], self.board_size[1]):
+            if self.is_collision(self.current_tetris, (self.pos[0], drop_y + 1)):
+                # combine boards here - use copy of placed_board with all 1s and 0s, and insert 1s
+                dropped_board = placed_board.copy()
+                for cur_tetris_index_x, row_x in enumerate(self.current_tetris):
+                    for cur_tetris_index_y, item in enumerate(row_x):
+                        if not item == 0:
+                            dropped_board[self.pos[0] + cur_tetris_index_x, drop_y + cur_tetris_index_y] = 1
+                break
+
+        # create synthetic to show if placing a block would clear a line
 
         return [placed_board.tolist(),
                 # self.game_tick_index,
@@ -289,12 +300,13 @@ class TetrisGame(object):
                 self.pos[0],
                 self.pos[1],
                 current_tetris_4x4,
+                # dropped_board,
                 # self.upcoming_tetris_list,
                 # self.saved_tetris,
                 # self.move_hold_valid,
                 # self.get_top_line_gaps(),
-                self.get_board_fill_percentage(),
-                self.get_board_height_percentage()]
+                self.get_board_fill_percentage(self.placed_board),
+                self.get_board_height_percentage(self.placed_board)]
 
     def game_reset(self):
         self.__init__()
