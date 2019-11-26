@@ -259,7 +259,8 @@ class TetrisGame(object):
         current_tetris_4x4[:np.array(self.current_tetris).shape[0], :np.array(self.current_tetris).shape[1]] = self.current_tetris
         # convert values to ones
         current_tetris_4x4[current_tetris_4x4 >= 1] = 1
-        
+        # TODO make tetris_to_4x4 func, for future purpose of converting the whole upcoming list
+        # do the same to saved_tetris
         saved_tetris_4x4 = np.zeros((4, 4), dtype=int)
         saved_tetris_4x4[:np.array(self.saved_tetris).shape[0], :np.array(self.saved_tetris).shape[1]] = self.saved_tetris
         # convert values to ones
@@ -306,6 +307,7 @@ class TetrisGame(object):
         # convert move_hold_valid into 1 or 0
         move_hold_valid = 1 if self.move_hold_valid else 0
 
+        # TODO when returning, return using a dict for easier accesss on other side
         return [placed_board.tolist(),
                 # self.game_tick_index,
                 self.lines_cleared,
