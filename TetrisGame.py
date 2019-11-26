@@ -281,7 +281,9 @@ class TetrisGame(object):
 
         # create synthetic to show board if current block is immediately placed
         # create synthetic to show the height of the resultant board
+        # create synthetic to show if placing a block would clear a line
         # code modified from move_drop_hard and get_combined_board
+        dropped_board_lines_cleared = 0
         for drop_y in range(self.pos[1], self.board_size[1]):
             if self.is_collision(self.current_tetris, (self.pos[0], drop_y + 1)):
                 # combine boards here - use copy of placed_board with all 1s and 0s, and insert 1s
@@ -290,9 +292,11 @@ class TetrisGame(object):
                     for cur_tetris_index_y, item in enumerate(row_x):
                         if not item == 0:
                             dropped_board[self.pos[0] + cur_tetris_index_x, drop_y + cur_tetris_index_y] = 1
+                            dropped_board_height_percentage = self.get_board_height_percentage(dropped_board)
+                            for row in dropped_board:
+                                if 0 not in row:
+                                    dropped_board_lines_cleared += 1
                 break
-
-        # create synthetic to show if placing a block would clear a line
 
         return [placed_board.tolist(),
                 # self.game_tick_index,
@@ -301,6 +305,8 @@ class TetrisGame(object):
                 self.pos[1],
                 current_tetris_4x4,
                 # dropped_board,
+                # dropped_board_height_percentage,
+                # dropped_board_lines_cleared,
                 # self.upcoming_tetris_list,
                 # self.saved_tetris,
                 # self.move_hold_valid,
