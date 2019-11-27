@@ -270,6 +270,12 @@ class TetrisGame(object):
         # convert values in placed_board to ones
         placed_board = self.placed_board.copy()
         placed_board[placed_board >= 1] = 1
+        
+        # create a board with the board shape with only the current tetris
+        current_tetris_board = np.zeros(self.board_size, dtype=int)
+        for cur_tetris_index_x, row_x in enumerate(self.current_tetris):
+            for cur_tetris_index_y, item in enumerate(row_x):
+                current_tetris_board[self.pos[0] + cur_tetris_index_x, self.pos[1] + cur_tetris_index_y] = 1
 
         # create synthetics for width and height of the current piece and saved piece and rotation
         # create synthetics for the width of the lowest block of the current and saved piece
@@ -309,6 +315,8 @@ class TetrisGame(object):
         move_hold_valid = 1 if self.move_hold_valid else 0
 
         state_dict = dict(placed_board=placed_board.tolist(),
+                          combined_board=self.get_combined_board(),
+                          current_tetris_board=current_tetris_board,
                           game_tick_index=self.game_tick_index,
                           lines_cleared=self.lines_cleared,
                           pos_x=self.pos[0],
