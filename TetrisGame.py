@@ -239,21 +239,9 @@ class TetrisGame(object):
             self.placed_board = np.delete(self.placed_board, 0, axis=1)
 
     def get_state(self):
-        # returns list of game state, including:
-        # self.placed_board
-        # self.game_tick_index
-        # self.lines_cleared
-        # self.pos
-        # self.current_tetris
-        # self.upcoming_tetris_list
-        # self.saved_tetris
-        # self.move_hold_valid
-        #
-        # self.get_board_fill()
-        # self.get_board_fill_percentage()
-        # self.get_board_height()
+        # returns dict of game state
 
-        # convert current_tetris into (4, 4) shape for consistant shape
+        # convert current_tetris into (4, 4) shape for consistent shape
         # create a 4x4 shape array of zeros and place the shape in
         current_tetris_4x4 = np.zeros((4, 4), dtype=int)
         current_tetris_4x4[:np.array(self.current_tetris).shape[0], :np.array(self.current_tetris).shape[1]] = self.current_tetris
