@@ -262,9 +262,10 @@ class TetrisGame(object):
         # TODO make tetris_to_4x4 func, for future purpose of converting the whole upcoming list
         # do the same to saved_tetris
         saved_tetris_4x4 = np.zeros((4, 4), dtype=int)
-        saved_tetris_4x4[:np.array(self.saved_tetris).shape[0], :np.array(self.saved_tetris).shape[1]] = self.saved_tetris
-        # convert values to ones
-        saved_tetris_4x4[saved_tetris_4x4 >= 1] = 1
+        if self.saved_tetris is not None:
+            saved_tetris_4x4[:np.array(self.saved_tetris).shape[0], :np.array(self.saved_tetris).shape[1]] = self.saved_tetris
+            # convert values to ones
+            saved_tetris_4x4[saved_tetris_4x4 >= 1] = 1
 
         # convert values in placed_board to ones
         placed_board = self.placed_board.copy()
@@ -326,6 +327,7 @@ class TetrisGame(object):
                           # upcoming_tetris_list = self.upcoming_tetris_list,  # don't use this yet
                           move_hold_valid=move_hold_valid,
                           top_line_gaps=self.get_top_line_gaps(),
+                          top_line_fill_percentage=self.get_board_fill_percentage(1 - self.get_top_line_gaps()),
                           board_fill_percentage=self.get_board_fill_percentage(self.placed_board),
                           board_height_percentage=self.get_board_height_percentage(self.placed_board))
 

@@ -7,7 +7,6 @@ import os
 from keras import Input, Model
 from keras.layers import Dense, concatenate, Conv2D, Flatten, MaxPooling2D
 import numpy as np
-import matplotlib.pyplot as plt
 
 from TetrisGame import TetrisGame
 from DrawBoard import DrawBoard
@@ -18,6 +17,7 @@ action_space = [lambda: game.move_rotate(1),
                 lambda: game.move_horizontal(-1),
                 lambda: game.move_drop_hard()]
 
+# TODO add activations - particularly on final layer
 # define model, not using sequential
 # first_input = Input(shape=(10, 24, 1))  # placed board
 # first_dense = Conv2D(240, 4, use_bias=True)(first_input)
@@ -50,7 +50,7 @@ dir_files = os.listdir(dir_str)
 model = keras.models.load_model(dir_str + "/" + dir_files[-1])
 model.summary()
 
-epoch_total = 500
+epoch_total = 2000
 # how often the model's move is used versus a random move
 mutate_threshold = 0.5  # 0 = all model moves, 1 = all random moves
 
@@ -101,7 +101,7 @@ while continue_train:
 
     # draw the board
     # drawBoard.draw_board(game_state[0])
-    drawBoard.draw_board(game.get_combined_board())
+    # drawBoard.draw_board(game.get_combined_board())
 
     # store the reward for training
     reward_list.append(game.lines_cleared - sum(reward_list))
