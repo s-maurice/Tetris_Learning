@@ -122,7 +122,6 @@ model = Model(inputs=[in_boards, in_tetris, in_gaps, in_one_dim], outputs=output
 model.compile(loss='binary_crossentropy', optimizer='adam')
 model.summary()
 
-
 # load model
 # dir_str = "tetris_dqn_training/tetris_dqn_models"
 # dir_files = os.listdir(dir_str)
@@ -133,7 +132,7 @@ model.summary()
 epoch_total = 1000
 # how often the model's move is used versus a random move
 mutate_threshold = 0.5  # 0 = all model moves, 1 = all random moves
-# drawBoard = DrawBoard()  # display training actions on screen
+draw_board = False # display training actions on screen
 
 # training starts
 reward_list, inputs_list, action_taken_list = [], [], []
@@ -141,6 +140,9 @@ epoch = 0
 time_start = time.time()
 game_tick_index_list, lines_cleared_list = [], []
 continue_train = True
+if draw_board:
+    drawBoard = DrawBoard()
+
 while continue_train:
     # get and store the game_state
     game_state = game.get_state()
@@ -163,8 +165,9 @@ while continue_train:
     game.game_tick()
 
     # draw the board
-    # drawBoard.draw_board(game_state[0])
-    # drawBoard.draw_board(game.get_combined_board())
+    if draw_board:
+        drawBoard.draw_board(game_state[0])
+        drawBoard.draw_board(game.get_combined_board())
 
     # store the reward for training
     reward_list.append(game.lines_cleared - sum(reward_list))
