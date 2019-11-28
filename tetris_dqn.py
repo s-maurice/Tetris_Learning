@@ -1,21 +1,68 @@
 import time
 
-import keras
 import pandas as pd
+import numpy as np
 import os
 
+import keras
 from keras import Input, Model
 from keras.layers import Dense, concatenate, Conv2D, Flatten, MaxPooling2D
-import numpy as np
 
 from TetrisGame import TetrisGame
 from DrawBoard import DrawBoard
 
+
+def prepare_model_inputs(input_dict: dict):
+    # takes game_state dict and returns the list of inputs with the correct shapes for the model ot use as inputs
+    # define the keys for the inputs
+    keys_board = ["placed_board", "combined_board", "current_tetris_board", "dropped_board"]
+    keys_tetris = ["current_tetris_4x4", "saved_tetris_4x4"]
+    keys_gaps = ["top_line_gaps"]
+    keys_one_dim = ["game_tick_index",
+                    "lines_cleared",
+                    "pos_x",
+                    "pos_y",
+                    "tetris_current_width",
+                    "tetris_current_height",
+                    "tetris_current_width_lowest",
+                    "tetris_saved_width",
+                    "tetris_saved_height",
+                    "tetris_saved_width_lowest",
+                    "dropped_board_height_percentage",
+                    "dropped_board_lines_cleared",
+                    "board_fill_percentage",
+                    "board_height_percentage",
+                    "top_line_fill_percentage",
+                    "move_hold_valid"]
+
+    # get and prepare the board inputs
+    boards = input_dict.get(keys_board)
+    board_input = np.concatenate(boards)
+
+    # get and prepare the tetris inputs
+    tetris = input_dict.get(keys_tetris)
+    tetris_input = np.concatenate(tetris)
+
+    # get and prepare the gap inputs
+    gap_input = input_dict.get(keys_gaps)
+
+    # get and prepare the one_dim inputs
+    one_dim_input = input_dict.get(keys_one_dim)
+
+    # debug print
+    [print(i) for i in [board_input, tetris_input, gap_input, one_dim_input]]
+
+    return [board_input, tetris_input, gap_input, one_dim_input]
+
+
 game = TetrisGame()
 action_space = [lambda: game.move_rotate(1),
+                lambda: game.move_rotate(-1),
                 lambda: game.move_horizontal(1),
                 lambda: game.move_horizontal(-1),
-                lambda: game.move_drop_hard()]
+                lambda: game.move_drop_hard(),
+                lambda: game.move_drop_soft(1),
+                lambda: game.move_hold()]
 
 # TODO add activations - particularly on final layer
 # define model, not using sequential
@@ -44,59 +91,75 @@ action_space = [lambda: game.move_rotate(1),
 # model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 # model.summary()
 
-# load model
-dir_str = "tetris_dqn_training/tetris_dqn_models"
-dir_files = os.listdir(dir_str)
-model = keras.models.load_model(dir_str + "/" + dir_files[-1])
+# define model using functional api
+# inputs
+in_boards = Input(shape=(10, 24, 4), name="in_boards")  # placed, combined, current_tetris, dropped - boards
+in_tetris = Input(shape=(4, 4, 2), name="in_tetris")  # current_tetris_4x4, saved_tetris_4x4
+in_gaps = Input(shape=(10, 1), name="in_gaps")  # top_line_gaps
+in_one_dim = Input(shape=(16, ), name="in_one_dim")  # other one dimensional inputs
+
+# model layers
+layer_boards = Dense(1000)(in_boards)
+layer_tetris = Dense(100)(in_tetris)
+
+layer_multi_dim = concatenate([layer_boards, layer_tetris, in_gaps])
+layer_multi_dim = Dense(1000)(layer_multi_dim)
+
+layer_one_dim = Dense(500)(in_one_dim)
+
+layer_main = concatenate([layer_one_dim, layer_multi_dim])
+layer_main = Dense(2000)(layer_main)
+layer_main = Dense(2000)(layer_main)
+
+# outputs - corresponding to actions in the action space
+output = Dense(len(action_space), name="output", activation="relu")(layer_main)
+
+# custom loss function or loss weights
+# TODO custom loss function or loss weights for reward func
+
+# compile model
+model = Model(inputs=[in_boards, in_tetris, in_gaps, in_one_dim], outputs=output)
+model.compile(loss='binary_crossentropy', optimizer='adam')
 model.summary()
 
+
+# load model
+# dir_str = "tetris_dqn_training/tetris_dqn_models"
+# dir_files = os.listdir(dir_str)
+# model = keras.models.load_model(dir_str + "/" + dir_files[-1])
+# model.summary()
+
+# Training Hyper-Parameters
 epoch_total = 1000
 # how often the model's move is used versus a random move
 mutate_threshold = 0.5  # 0 = all model moves, 1 = all random moves
+# drawBoard = DrawBoard()  # display training actions on screen
 
-# drawBoard = DrawBoard()
-
+# training starts
 reward_list, inputs_list, action_taken_list = [], [], []
 epoch = 0
 time_start = time.time()
 game_tick_index_list, lines_cleared_list = [], []
 continue_train = True
 while continue_train:
-    # sort out inputs
+    # get and store the game_state
     game_state = game.get_state()
-    onedim_inputs = [game_state[1], game_state[2], game_state[3], game_state[5], game_state[6]]
+    inputs_list.append(game_state)
 
-    # store the inputs
-    inputs_list.append([game_state[0], game_state[4], onedim_inputs])
-
-    # here decide whether or not to use the model prediction or a random prediction
-    # this helps the model mutate and improve
-    # threshold value is predetermined
-    use_model_prediction = np.random.rand() > mutate_threshold
-
-    if use_model_prediction:
-        # make a prediction, reshape to add batch size of 1
-        action_proba = model.predict([np.array(game_state[0]).reshape((1, 10, 24, 1)),
-                                      np.array(game_state[4]).reshape((1, 4, 4, 1)),
-                                      np.array(onedim_inputs).reshape(1, 5)])
-
-        # store the action
+    # here decide whether or not to use the model prediction or a random prediction to help the model improve
+    if np.random.rand() > mutate_threshold:
+        # make and store a predicted action, reshape to add batch size of 1
+        action_proba = model.predict(prepare_model_inputs(game_state))
         action_taken_list.append(action_proba[0])
-
-        # do the highest value action
-        action_space[int(np.argmax(action_proba))]()
     else:
-        # randomly select an action
+        # randomly select and store an action
         action_to_take = np.random.randint(len(action_space))
-        # store the randomly selected action
         action_proba = np.zeros(len(action_space))
         action_proba[action_to_take] = 1
         action_taken_list.append(action_proba)
 
-        # do the randomly selected action
-        action_space[action_to_take]()
-
-    # tick the game
+    # do the highest value action and tick the game
+    action_space[int(np.argmax(action_proba))]()
     game.game_tick()
 
     # draw the board
@@ -109,27 +172,16 @@ while continue_train:
     # reward_list.append(game.game_tick_index * game.lines_cleared)
     # reward_list.append(game.game_tick_index ** game.lines_cleared)
 
-    # check if game is over
+    # check if game is over and fit the model
     if not game.game_live:
-        # train the model
+        # convert action list to have full confidence in chosen action
+        action_taken_list = np.array(action_taken_list)
+        action_taken_list_abs = np.zeros_like(action_taken_list)
+        for index, row in enumerate(action_taken_list_abs):
+            row[np.argmax(action_taken_list[index])] = 1
 
-        # to speed up, perhaps only fit at the end of epochs with lines_cleared > 0
-        if game.lines_cleared > 0:
-            # split inputs out again
-            input0, input1, input2 = [], [], []
-            for entry in inputs_list:
-                input0.append(np.array(entry[0]).reshape((10, 24, 1)))
-                input1.append(np.array(entry[1]).reshape(4, 4, 1))
-                input2.append(np.array(entry[2]).reshape(5))
-
-            # convert action list to have full confidence in chosen action
-            action_taken_list = np.array(action_taken_list)
-            action_taken_list_abs = np.zeros_like(action_taken_list)
-            for index, row in enumerate(action_taken_list_abs):
-                row[np.argmax(action_taken_list[index])] = 1
-
-            # fit the model
-            model.fit([input0, input1, input2], action_taken_list_abs, sample_weight=np.array(reward_list), verbose=1)
+        # fit the model
+        model.fit(prepare_model_inputs(game_state), action_taken_list_abs, sample_weight=np.array(reward_list), verbose=1)
 
         # reset the training data lists
         reward_list, inputs_list, action_taken_list = [], [], []
@@ -137,23 +189,17 @@ while continue_train:
         # log progress
         epoch += 1
         print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch, game.game_tick_index, game.lines_cleared, (((time.time() - time_start) / (1 - ((epoch_total - epoch) / epoch_total)))) - (time.time() - time_start)))
-        # print(game.placed_board)
         game_tick_index_list.append(game.game_tick_index)
         lines_cleared_list.append(game.lines_cleared)
 
-        # reset the game
-        game.game_reset()
-
-        # finish training if epoch limit is reached
+        # finish training if epoch limit is reached, otherwise reset the game for another epoch
         if epoch == epoch_total:
             continue_train = False
+        else:
+            game.game_reset()
 
 
-print("---------")
-print("ended")
-
-print(game_tick_index_list)
-print(lines_cleared_list)
+print("-- Training Finished -- ")
 
 print("Average Ticks Survived: {} Average Lines Cleared: {}".format(np.average(game_tick_index_list), np.average(lines_cleared_list)))
 print("Max Ticks Survived: {} Max Lines Cleared: {}".format(np.max(game_tick_index_list), np.max(lines_cleared_list)))
@@ -162,6 +208,7 @@ print("Max Ticks Survived: {} Max Lines Cleared: {}".format(np.max(game_tick_ind
 files_list = os.listdir("tetris_dqn_training/tetris_dqn_models")
 files_list.sort(key=lambda x:int(x.split("_")[0]))
 
+# check if there are existing save entries
 if len(files_list) == 0:
     epoch_start = 0
     file_index = 0

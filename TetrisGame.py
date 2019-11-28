@@ -302,22 +302,23 @@ class TetrisGame(object):
         # convert move_hold_valid into 1 or 0
         move_hold_valid = 1 if self.move_hold_valid else 0
 
+        # compile the features into a dict
         state_dict = dict(placed_board=placed_board.tolist(),
                           combined_board=self.get_combined_board(),
                           current_tetris_board=current_tetris_board,
+                          dropped_board=dropped_board,
                           game_tick_index=self.game_tick_index,
                           lines_cleared=self.lines_cleared,
-                          pos_x=self.pos[0],
-                          pos_y=self.pos[1],
-                          tetris_current_width=tetris_current_width,
-                          tetris_current_height=tetris_current_height,
-                          tetris_current_width_lowest=tetris_current_width_lowest,
-                          tetris_saved_width=tetris_saved_width,
-                          tetris_saved_height=tetris_saved_height,
-                          tetris_saved_width_lowest=tetris_saved_width_lowest,
+                          pos_x=self.pos[0] / self.board_size[0],
+                          pos_y=self.pos[1] / self.board_size[1],
+                          tetris_current_width=tetris_current_width / 4,
+                          tetris_current_height=tetris_current_height / 4,
+                          tetris_current_width_lowest=tetris_current_width_lowest / 4,
+                          tetris_saved_width=tetris_saved_width / 4,
+                          tetris_saved_height=tetris_saved_height / 4,
+                          tetris_saved_width_lowest=tetris_saved_width_lowest / 4,
                           current_tetris_4x4=current_tetris_4x4,
                           saved_tetris_4x4=saved_tetris_4x4,
-                          dropped_board=dropped_board,
                           dropped_board_height_percentage=dropped_board_height_percentage,
                           dropped_board_lines_cleared=dropped_board_lines_cleared,
                           # upcoming_tetris_list = self.upcoming_tetris_list,  # don't use this yet
@@ -327,27 +328,7 @@ class TetrisGame(object):
                           board_fill_percentage=self.get_board_fill_percentage(self.placed_board),
                           board_height_percentage=self.get_board_height_percentage(self.placed_board))
 
-        return [placed_board.tolist(),
-                # self.game_tick_index,
-                self.lines_cleared,
-                self.pos[0],
-                self.pos[1],
-                # tetris_current_width,
-                # tetris_current_height,
-                # tetris_current_width_lowest,
-                # tetris_saved_width,
-                # tetris_saved_height,
-                # tetris_saved_width_lowest,
-                current_tetris_4x4,
-                # saved_tetris_4x4,
-                # dropped_board,
-                # dropped_board_height_percentage,
-                # dropped_board_lines_cleared,
-                # self.upcoming_tetris_list,  # don't use this yet
-                # move_hold_valid
-                # self.get_top_line_gaps(),
-                self.get_board_fill_percentage(self.placed_board),
-                self.get_board_height_percentage(self.placed_board)]
+        return state_dict
 
     def game_reset(self):
         self.__init__()
