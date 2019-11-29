@@ -6,7 +6,7 @@ import os
 
 import keras
 from keras import Input, Model
-from keras.layers import Dense, concatenate, Conv2D, Flatten, MaxPooling2D
+from keras.layers import Dense, concatenate, Conv2D, Flatten, MaxPooling2D, Reshape
 
 from TetrisGame import TetrisGame
 from DrawBoard import DrawBoard
@@ -101,11 +101,30 @@ in_one_dim = Input(shape=(16, ), name="in_one_dim")  # other one dimensional inp
 # model layers
 layer_boards = Dense(1000)(in_boards)
 layer_tetris = Dense(100)(in_tetris)
+layer_gaps = Dense(10)(in_gaps)
 
-layer_multi_dim = concatenate([layer_boards, layer_tetris, in_gaps])
+# reshape and dense to match shapes
+layer_boards = Reshape(target_shape=(1000, 240))(layer_boards)
+layer_tetris = Reshape(target_shape=(40, 40))(layer_tetris)
+layer_gaps = Reshape(target_shape=(10, 10))(layer_gaps)
+
+layer_boards = Dense(100)(layer_boards)
+layer_tetris = Dense(100)(layer_tetris)
+layer_gaps = Dense(100)(layer_gaps)
+
+# combine the multi_dim layers
+layer_multi_dim = concatenate([layer_boards, layer_tetris, layer_gaps], axis=1)
 layer_multi_dim = Dense(1000)(layer_multi_dim)
 
+# handle single dim layer
 layer_one_dim = Dense(500)(in_one_dim)
+
+print(layer_one_dim)
+print(layer_multi_dim)
+
+# reshape and combine the multi_dim and the single dim layers
+layer_multi_dim = Flatten()(layer_multi_dim)
+print(layer_multi_dim)
 
 layer_main = concatenate([layer_one_dim, layer_multi_dim])
 layer_main = Dense(2000)(layer_main)
@@ -132,7 +151,7 @@ model.summary()
 epoch_total = 1000
 # how often the model's move is used versus a random move
 mutate_threshold = 0.5  # 0 = all model moves, 1 = all random moves
-draw_board = False # display training actions on screen
+draw_board = False  # display training actions on screen
 
 # training starts
 reward_list, inputs_list, action_taken_list = [], [], []
@@ -171,9 +190,6 @@ while continue_train:
 
     # store the reward for training
     reward_list.append(game.lines_cleared - sum(reward_list))
-    # reward_list.append(game.game_tick_index)
-    # reward_list.append(game.game_tick_index * game.lines_cleared)
-    # reward_list.append(game.game_tick_index ** game.lines_cleared)
 
     # check if game is over and fit the model
     if not game.game_live:
