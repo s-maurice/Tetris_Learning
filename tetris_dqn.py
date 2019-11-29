@@ -60,6 +60,7 @@ def prepare_model_inputs(input_dicts):
     return input_type_lists
 
 
+# create game instance and define action_space in list
 game = TetrisGame()
 action_space = [lambda: game.move_rotate(1),
                 lambda: game.move_rotate(-1),
@@ -69,8 +70,7 @@ action_space = [lambda: game.move_rotate(1),
                 lambda: game.move_drop_soft(1),
                 lambda: game.move_hold()]
 
-# TODO add activations - particularly on final layer
-# define model, not using sequential
+# define model, not using sequential (old)
 # first_input = Input(shape=(10, 24, 1))  # placed board
 # first_dense = Conv2D(240, 4, use_bias=True)(first_input)
 # first_dense = MaxPooling2D()(first_dense)
