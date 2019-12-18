@@ -28,3 +28,9 @@ convert draw_board into class, allowing for func calling to draw any board - use
 change reward function to reward keeping the board height low - so it tries to avoid stacking up
 
 alternative methodology - give all the locations of the possible placements and have the model decide between them
+
+
+
+
+when the model makes a prediction, it predicts the reward for every action it could take in the action space
+then the highest is selected

@@ -138,7 +138,7 @@ output = Dense(len(action_space), name="output", activation="relu")(layer_main)
 
 # compile model
 model = Model(inputs=[in_boards, in_tetris, in_gaps, in_one_dim], outputs=output)
-model.compile(loss='binary_crossentropy', optimizer='adam')
+model.compile(loss='mse', optimizer='adam')
 model.summary()
 
 # load model
