@@ -133,9 +133,6 @@ layer_main = Dense(1000)(layer_main)
 # outputs - corresponding to actions in the action space
 output = Dense(len(action_space), name="output", activation="relu")(layer_main)
 
-# custom loss function or loss weights
-# TODO custom loss function or loss weights for reward func
-
 # compile model
 model = Model(inputs=[in_boards, in_tetris, in_gaps, in_one_dim], outputs=output)
 model.compile(loss='mse', optimizer='adam')
@@ -148,7 +145,7 @@ model.summary()
 # model.summary()
 
 # Training Hyper-Parameters
-epoch_total = 1000
+epoch_total = 100
 # how often the model's move is used versus a random move
 mutate_threshold = 0.5  # 0 = all model moves, 1 = all random moves
 draw_board = False  # display training actions on screen
@@ -178,8 +175,8 @@ while continue_train:
         action_proba[action_to_take] = 1
         action_taken_list.append(action_proba)
 
-    # do the highest value action and tick the game
-    action_space[int(np.argmax(action_proba))]()
+    # do the lowest value action and tick the game
+    action_space[int(np.argmin(action_proba))]()
     game.game_tick()
 
     # draw the board
@@ -187,22 +184,19 @@ while continue_train:
         drawBoard.draw_board(game_state[0])
         drawBoard.draw_board(game.get_combined_board())
 
-    # store the reward for training
-    reward_list.append(game.lines_cleared - sum(reward_list))
+    # store the reward for training - minimise
+    reward_list.append(game_state.get("board_height_percentage"))
 
     # check if game is over and fit the model
     if not game.game_live:
-        # convert action list to have full confidence in chosen action
+        # convert action list to have the actual reward given
+        reward_list.insert(0, 0)  # reward of 0 for first item
         action_taken_list = np.array(action_taken_list)
-        action_taken_list_abs = np.zeros_like(action_taken_list)
-        for index, row in enumerate(action_taken_list_abs):
-            row[np.argmax(action_taken_list[index])] = 1
+        for index, row in enumerate(action_taken_list):
+            row[np.argmin(row)] = reward_list[index+1]
 
         # fit the model
-        model.fit(prepare_model_inputs(inputs_list),
-                  action_taken_list_abs,
-                  sample_weight=np.array(reward_list),
-                  verbose=1)
+        model.fit(prepare_model_inputs(inputs_list), action_taken_list, verbose=1)
 
         # reset the training data lists
         reward_list, inputs_list, action_taken_list = [], [], []
@@ -212,7 +206,7 @@ while continue_train:
         print("Epoch: {}, GameTicks: {}, LinesCleared: {}, EstTimeRemaining(s): {}".format(epoch,
                                                                                            game.game_tick_index,
                                                                                            game.lines_cleared,
-                                                                                           (((time.time() - time_start) / (1 - ((epoch_total - epoch) / epoch_total)))) - (time.time() - time_start)))
+                                                                                           ((time.time() - time_start) / (1 - ((epoch_total - epoch) / epoch_total))) - (time.time() - time_start)))
         game_tick_index_list.append(game.game_tick_index)
         lines_cleared_list.append(game.lines_cleared)
 
