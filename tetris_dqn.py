@@ -104,34 +104,34 @@ in_gaps = Input(shape=(1, 10), name="in_gaps")  # top_line_gaps, technically a o
 in_one_dim = Input(shape=(16, ), name="in_one_dim")  # other one dimensional inputs
 
 # model layers
-layer_boards = Dense(100)(in_boards)
-layer_tetris = Dense(100)(in_tetris)
-layer_gaps = Dense(10)(in_gaps)
+layer_boards = Dense(100, activation="elu")(in_boards)
+layer_tetris = Dense(100, activation="elu")(in_tetris)
+layer_gaps = Dense(10, activation="elu")(in_gaps)
 
 # reshape and dense to match shapes
 layer_boards = Reshape(target_shape=(100, 40))(layer_boards)
 layer_tetris = Reshape(target_shape=(40, 20))(layer_tetris)
 layer_gaps = Reshape(target_shape=(10, 1))(layer_gaps)
 
-layer_boards = Dense(100)(layer_boards)
-layer_tetris = Dense(100)(layer_tetris)
-layer_gaps = Dense(100)(layer_gaps)
+layer_boards = Dense(100, activation="elu")(layer_boards)
+layer_tetris = Dense(100, activation="elu")(layer_tetris)
+layer_gaps = Dense(100, activation="elu")(layer_gaps)
 
 # combine the multi_dim layers
 layer_multi_dim = concatenate([layer_boards, layer_tetris, layer_gaps], axis=1)
-layer_multi_dim = Dense(1000)(layer_multi_dim)
+layer_multi_dim = Dense(1000, activation="elu")(layer_multi_dim)
 
 # handle single dim layer
-layer_one_dim = Dense(100)(in_one_dim)
+layer_one_dim = Dense(100, activation="elu")(in_one_dim)
 
 # reshape and combine the multi_dim and the single dim layers
 layer_multi_dim = Flatten()(layer_multi_dim)
 layer_main = concatenate([layer_one_dim, layer_multi_dim])
-layer_main = Dense(1000)(layer_main)
-layer_main = Dense(1000)(layer_main)
+layer_main = Dense(1000, activation="elu")(layer_main)
+layer_main = Dense(1000, activation="softplus")(layer_main)
 
 # outputs - corresponding to actions in the action space
-output = Dense(len(action_space), name="output", activation="relu")(layer_main)
+output = Dense(len(action_space), name="output", activation="elu")(layer_main)
 
 # compile model
 model = Model(inputs=[in_boards, in_tetris, in_gaps, in_one_dim], outputs=output)
@@ -145,7 +145,7 @@ model.summary()
 # model.summary()
 
 # Training Hyper-Parameters
-epoch_total = 100
+epoch_total = 5
 # how often the model's move is used versus a random move
 mutate_threshold = 0.5  # 0 = all model moves, 1 = all random moves
 draw_board = False  # display training actions on screen
@@ -172,7 +172,7 @@ while continue_train:
         # randomly select and store an action
         action_to_take = np.random.randint(len(action_space))
         action_proba = np.zeros(len(action_space))
-        action_proba[action_to_take] = 1
+        action_proba[action_to_take] = 0
         action_taken_list.append(action_proba)
 
     # do the lowest value action and tick the game
@@ -226,7 +226,7 @@ print("Max Ticks Survived: {} Max Lines Cleared: {}".format(np.max(game_tick_ind
 
 # save model and training data
 files_list = os.listdir("tetris_dqn_training/tetris_dqn_models")
-files_list.sort(key=lambda x:int(x.split("_")[0]))
+files_list.sort(key=lambda x: int(x.split("_")[0]))
 
 # check if there are existing save entries
 if len(files_list) == 0:
