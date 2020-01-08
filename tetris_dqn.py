@@ -97,55 +97,56 @@ action_space = [lambda: game.move_rotate(1),
 # model.summary()
 
 # define model using functional api
-# inputs
-in_boards = Input(shape=(4, 10, 24), name="in_boards")  # placed, combined, current_tetris, dropped - boards
-in_tetris = Input(shape=(2, 4, 4), name="in_tetris")  # current_tetris_4x4, saved_tetris_4x4
-in_gaps = Input(shape=(1, 10), name="in_gaps")  # top_line_gaps, technically a one dimensional input
-in_one_dim = Input(shape=(16, ), name="in_one_dim")  # other one dimensional inputs
-
-# model layers
-layer_boards = Dense(100, activation="relu")(in_boards)
-layer_tetris = Dense(100, activation="relu")(in_tetris)
-layer_gaps = Dense(10, activation="relu")(in_gaps)
-
-# reshape and dense to match shapes
-layer_boards = Reshape(target_shape=(100, 40))(layer_boards)
-layer_tetris = Reshape(target_shape=(40, 20))(layer_tetris)
-layer_gaps = Reshape(target_shape=(10, 1))(layer_gaps)
-
-layer_boards = Dense(100, activation="relu")(layer_boards)
-layer_tetris = Dense(100, activation="relu")(layer_tetris)
-layer_gaps = Dense(100, activation="relu")(layer_gaps)
-
-# combine the multi_dim layers
-layer_multi_dim = concatenate([layer_boards, layer_tetris, layer_gaps], axis=1)
-layer_multi_dim = Dense(1000, activation="relu")(layer_multi_dim)
-
-# handle single dim layer
-layer_one_dim = Dense(100, activation="relu")(in_one_dim)
-
-# reshape and combine the multi_dim and the single dim layers
-layer_multi_dim = Flatten()(layer_multi_dim)
-layer_main = concatenate([layer_one_dim, layer_multi_dim])
-layer_main = Dense(1000, activation="relu")(layer_main)
-layer_main = Dense(1000, activation="softplus")(layer_main)
-
-# outputs - corresponding to actions in the action space
-output = Dense(len(action_space), name="output", activation="elu")(layer_main)
-
-# compile model
-model = Model(inputs=[in_boards, in_tetris, in_gaps, in_one_dim], outputs=output)
-model.compile(loss='mse', optimizer='adam')
-model.summary()
-
-# load model
-# dir_str = "tetris_dqn_training/tetris_dqn_models"
-# dir_files = os.listdir(dir_str)
-# model = keras.models.load_model(dir_str + "/" + dir_files[-1])
+# # inputs
+# in_boards = Input(shape=(4, 10, 24), name="in_boards")  # placed, combined, current_tetris, dropped - boards
+# in_tetris = Input(shape=(2, 4, 4), name="in_tetris")  # current_tetris_4x4, saved_tetris_4x4
+# in_gaps = Input(shape=(1, 10), name="in_gaps")  # top_line_gaps, technically a one dimensional input
+# in_one_dim = Input(shape=(16, ), name="in_one_dim")  # other one dimensional inputs
+#
+# # model layers
+# layer_boards = Dense(100, activation="relu")(in_boards)
+# layer_tetris = Dense(100, activation="relu")(in_tetris)
+# layer_gaps = Dense(10, activation="relu")(in_gaps)
+#
+# # reshape and dense to match shapes
+# layer_boards = Reshape(target_shape=(100, 40))(layer_boards)
+# layer_tetris = Reshape(target_shape=(40, 20))(layer_tetris)
+# layer_gaps = Reshape(target_shape=(10, 1))(layer_gaps)
+#
+# layer_boards = Dense(100, activation="relu")(layer_boards)
+# layer_tetris = Dense(100, activation="relu")(layer_tetris)
+# layer_gaps = Dense(100, activation="relu")(layer_gaps)
+#
+# # combine the multi_dim layers
+# layer_multi_dim = concatenate([layer_boards, layer_tetris, layer_gaps], axis=1)
+# layer_multi_dim = Dense(1000, activation="relu")(layer_multi_dim)
+#
+# # handle single dim layer
+# layer_one_dim = Dense(100, activation="relu")(in_one_dim)
+#
+# # reshape and combine the multi_dim and the single dim layers
+# layer_multi_dim = Flatten()(layer_multi_dim)
+# layer_main = concatenate([layer_one_dim, layer_multi_dim])
+# layer_main = Dense(1000, activation="relu")(layer_main)
+# layer_main = Dense(1000, activation="softplus")(layer_main)
+#
+# # outputs - corresponding to actions in the action space
+# output = Dense(len(action_space), name="output", activation="elu")(layer_main)
+#
+# # compile model
+# model = Model(inputs=[in_boards, in_tetris, in_gaps, in_one_dim], outputs=output)
+# model.compile(loss='mse', optimizer='adam')
 # model.summary()
 
+# load model
+dir_str = "tetris_dqn_training/tetris_dqn_models"
+dir_files = os.listdir(dir_str)
+dir_files.sort(key=lambda x: (int(x.split("_")[0])))
+model = keras.models.load_model(dir_str + "/" + dir_files[-1])
+model.summary()
+
 # Training Hyper-Parameters
-epoch_total = 1000
+epoch_total = 500
 # how often the model's move is used versus a random move
 mutate_threshold = 0.3  # 0 = all model moves, 1 = all random moves
 draw_board = False  # display training actions on screen
